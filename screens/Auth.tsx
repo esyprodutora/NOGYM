@@ -32,7 +32,10 @@ export const Auth: React.FC = () => {
         else if (view === 'register') {
             if (!email || !password || !fullName || !phone) throw new Error("Preencha todos os campos.");
             const success = await register(email, password, fullName, phone);
-            if (!success) throw new Error("Erro ao criar conta. Tente outro e-mail.");
+            if (!success) {
+                // If register returns false without throwing, it might be a silent fail or handled in store
+                throw new Error("Erro ao criar conta. Verifique os dados ou tente outro e-mail.");
+            }
         }
         else if (view === 'forgot_password') {
             if (!email) throw new Error("Informe seu e-mail.");
@@ -45,18 +48,17 @@ export const Auth: React.FC = () => {
             }
         }
     } catch (err: any) {
-        setErrorMsg(err.message);
+        // Handle Supabase specific error messages for better UX
+        if (err.message?.includes('registered')) {
+             setErrorMsg("Este e-mail já está cadastrado. Tente fazer login.");
+        } else if (err.message?.includes('rate limit')) {
+             setErrorMsg("Muitas tentativas. Aguarde um pouco.");
+        } else {
+             setErrorMsg(err.message || "Ocorreu um erro. Tente novamente.");
+        }
     } finally {
         setIsLoading(false);
     }
-  };
-
-  const fillDemoUser = () => {
-      setEmail('demo@nogym.com');
-      setPassword('123456');
-      setFullName('Usuário Demo');
-      setPhone('11999999999');
-      setErrorMsg('');
   };
 
   return (
@@ -76,9 +78,8 @@ export const Auth: React.FC = () => {
 
         <div className="relative z-10 flex-1 flex flex-col p-8 overflow-y-auto no-scrollbar">
             <div className="mt-8 mb-auto">
-                 {/* Text Logo Only */}
+                 {/* Text Logo Only (Icon Removed) */}
                  <div className="flex items-center gap-3 mb-6">
-                    <div className="w-10 h-10 bg-brand-accent rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-[0_0_20px_rgba(164,0,109,0.5)]">N</div>
                     <span className="text-3xl font-bold tracking-tighter text-brand-accent">NO <span className="text-white">Gym</span></span>
                 </div>
                 
@@ -147,13 +148,7 @@ export const Auth: React.FC = () => {
                 </div>
                 
                 {view === 'login' && (
-                    <div className="flex justify-between items-center">
-                        <button 
-                            onClick={fillDemoUser}
-                            className="text-xs font-bold text-brand-accent bg-brand-accent/10 px-3 py-1.5 rounded-full hover:bg-brand-accent/20 transition-colors"
-                        >
-                            Preencher Demo
-                        </button>
+                    <div className="flex justify-end items-center">
                         <button 
                             onClick={() => setView('forgot_password')}
                             className="text-sm text-brand-muted hover:text-white transition-colors"
