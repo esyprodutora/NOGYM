@@ -1,17 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useAppStore } from '../store/appStore';
 import { AppScreen } from '../types';
 
 export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentScreen, setScreen, user, theme } = useAppStore();
-  const [logoError, setLogoError] = useState(false);
 
   const isAuth = currentScreen === AppScreen.AUTH;
   const isFullScreen = currentScreen === AppScreen.WORKOUT_DETAILS || currentScreen === AppScreen.UPSELL;
   
-  // Use absolute path for public asset instead of import
-  const logo = '/assets/logo.png';
-
   return (
     <div className={`min-h-screen w-full bg-neutral-900 flex items-center justify-center p-0 md:p-8 ${theme}`}>
       {/* Mobile Device Simulator Container */}
@@ -30,23 +26,13 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
         {!isAuth && !isFullScreen && (
           <header className="pt-14 pb-2 px-6 bg-brand-light dark:bg-brand-dark flex items-center justify-between shrink-0 transition-colors duration-300">
              <div className="flex flex-col">
-                {/* LOGO */}
+                {/* LOGO TEXT ONLY */}
                 <div className="h-8 flex items-center">
                     <div className="flex items-center gap-2">
-                         {!logoError ? (
-                             <img 
-                                src={logo} 
-                                alt="NO Gym Logo" 
-                                className="h-8 w-auto object-contain" 
-                                onError={() => setLogoError(true)}
-                             />
-                         ) : (
-                             // Fallback to Text Logo if no image is provided
-                             <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center text-white font-bold text-lg">N</div>
-                                <span className="text-xl font-bold tracking-tighter text-brand-accent">NO <span className="text-black dark:text-white">Gym</span></span>
-                             </div>
-                         )}
+                         <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center text-white font-bold text-lg">N</div>
+                            <span className="text-xl font-bold tracking-tighter text-brand-accent">NO <span className="text-black dark:text-white">Gym</span></span>
+                         </div>
                     </div>
                 </div>
              </div>

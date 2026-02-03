@@ -2,6 +2,7 @@ export interface UserProfile {
   id: string;
   email: string;
   full_name: string;
+  phone?: string;
   current_weight_kg: number;
   starting_weight_kg: number;
   target_weight_kg: number;
@@ -71,9 +72,9 @@ export interface JournalEntry {
 export enum AppScreen {
   AUTH = 'AUTH',            // Start/Login Screen
   PROFILE = 'PROFILE',      // Settings/Account
-  DASHBOARD = 'DASHBOARD',  // Stats Overview
-  PROGRAM = 'PROGRAM',      // The Course List
-  RECIPES = 'RECIPES',      // Recipe List
+  DASHBOARD = 'DASHBOARD',
+  PROGRAM = 'PROGRAM',
+  RECIPES = 'RECIPES',
   WORKOUT_DETAILS = 'WORKOUT_DETAILS',
   MINDSET = 'MINDSET',
   UPSELL = 'UPSELL'

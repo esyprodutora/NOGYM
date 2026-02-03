@@ -65,6 +65,8 @@ interface AppState {
   setScreen: (screen: AppScreen) => void;
   initialize: () => Promise<void>;
   login: (email: string, password: string) => Promise<boolean>;
+  register: (email: string, password: string, fullName: string, phone: string) => Promise<boolean>;
+  resetPassword: (email: string) => Promise<boolean>;
   logout: () => void;
   selectWorkout: (id: string) => void;
   toggleCompleteWorkout: (id: string) => void;
@@ -159,6 +161,7 @@ export const useAppStore = create<AppState>((set, get) => ({
               id: userId,
               email: profile.email,
               full_name: profile.full_name,
+              phone: profile.phone,
               current_weight_kg: profile.current_weight_kg || 0,
               starting_weight_kg: weightHistory[0]?.weight || profile.current_weight_kg,
               target_weight_kg: profile.target_weight_kg || 0,
@@ -189,6 +192,39 @@ export const useAppStore = create<AppState>((set, get) => ({
         return true;
     }
     return false;
+  },
+
+  register: async (email, password, fullName, phone) => {
+    const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+            data: {
+                full_name: fullName,
+                phone: phone
+            }
+        }
+    });
+
+    if (error) {
+        console.error("Signup failed", error);
+        return false;
+    }
+
+    if (data.user) {
+        // Automatically login/fetch user data if session is created immediately (no email confirm)
+        await get().fetchUserData(data.user.id);
+        set({ currentScreen: AppScreen.DASHBOARD });
+        return true;
+    }
+    return false;
+  },
+
+  resetPassword: async (email) => {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: window.location.origin, // Redirect back to app after click
+      });
+      return !error;
   },
   
   logout: async () => {
