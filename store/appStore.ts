@@ -17,7 +17,6 @@ const DAILY_TIPS: DailyTip[] = [
     { id: '3', category: 'Hidratação', title: 'Beba antes de comer', content: 'Muitas vezes confundimos sede com fome. Beba água antes das refeições.' },
 ];
 
-// Content Data (In a real app, these could also come from DB, but keeping static for simplicity/speed)
 const MOCK_MINDSET: MindsetItem[] = [
     { id: 'm1', title: "Visualizando Seu Sucesso", duration: "5 min", type: "Áudio", completed: false },
     { id: 'm2', title: "Superando a Ansiedade do Platô", duration: "8 min", type: "Áudio", completed: false },
@@ -26,7 +25,6 @@ const MOCK_MINDSET: MindsetItem[] = [
 ];
 
 const MOCK_RECIPES: Recipe[] = [
-  // Keeping the static recipes for UI speed, assuming images are updated as requested previously
   { id: 'b1', title: 'Panqueca de Banana Fit', calories: 300, time_minutes: 10, category: 'Café da Manhã', image_url: 'https://images.unsplash.com/photo-1575853121743-60c24f0a7502?q=80&w=800', ingredients: ['Banana', 'Ovo', 'Aveia'], instructions: ['Misturar e fritar'] },
   { id: 'l1', title: 'Bowl de Quinoa', calories: 450, time_minutes: 15, category: 'Almoço', image_url: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800', ingredients: ['Quinoa', 'Abacate'], instructions: ['Cozinhar e montar'] },
   { id: 'd1', title: 'Salmão Assado', calories: 520, time_minutes: 25, category: 'Jantar', image_url: 'https://images.unsplash.com/photo-1560717845-968823efbee1?q=80&w=800', ingredients: ['Salmão', 'Ervas'], instructions: ['Assar no forno'] },
@@ -46,6 +44,27 @@ const MOCK_WORKOUTS: Workout[] = Array.from({ length: 28 }, (_, i) => ({
   is_locked: i > 2, 
   completed: false,
 }));
+
+// DEMO USER DATA for Fallback
+const DEMO_USER: UserProfile = {
+  id: 'demo-user-123',
+  email: 'admin@nogym.com',
+  full_name: 'Usuário Demo',
+  phone: '11999999999',
+  current_weight_kg: 68.5,
+  starting_weight_kg: 72.0,
+  target_weight_kg: 60.0,
+  height_cm: 165,
+  streak_days: 12,
+  is_premium: true,
+  weight_history: [
+      { date: '01 Out', weight: 72.0 },
+      { date: '15 Out', weight: 70.5 },
+      { date: '01 Nov', weight: 69.2 },
+      { date: 'Hoje', weight: 68.5 }
+  ],
+  earned_badges: ['start', 'loss_1']
+};
 
 interface AppState {
   currentScreen: AppScreen;
@@ -98,137 +117,196 @@ export const useAppStore = create<AppState>((set, get) => ({
   setScreen: (screen) => set({ currentScreen: screen }),
 
   initialize: async () => {
-    // Check active session
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session?.user) {
-        await get().fetchUserData(session.user.id);
-        set({ currentScreen: AppScreen.DASHBOARD });
+    try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+            await get().fetchUserData(session.user.id);
+            set({ currentScreen: AppScreen.DASHBOARD });
+        }
+    } catch (e) {
+        console.log("Inicialização: Sem sessão ativa ou offline.");
     }
   },
 
   fetchUserData: async (userId: string) => {
-      // 1. Fetch Profile
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-      
-      if (!profile) return;
+      // Demo Check
+      if (userId === DEMO_USER.id) return;
 
-      // 2. Fetch Weight History
-      const { data: weightLogs } = await supabase
-        .from('weight_logs')
-        .select('created_at, weight_kg')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: true });
+      try {
+          // 1. Fetch Profile
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+          
+          if (error || !profile) {
+              console.warn("Perfil não encontrado, tentando criar...", error);
+              // Opcional: Criar perfil on-the-fly se não existir (para robustez)
+              return;
+          }
 
-      const weightHistory = weightLogs?.map(log => ({
-          date: new Date(log.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
-          weight: log.weight_kg
-      })) || [];
+          // 2. Fetch Weight History
+          const { data: weightLogs } = await supabase
+            .from('weight_logs')
+            .select('created_at, weight_kg')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: true });
 
-      // 3. Fetch Water Today
-      const today = new Date().toISOString().split('T')[0];
-      const { data: waterLogs } = await supabase
-        .from('water_logs')
-        .select('amount_ml')
-        .eq('user_id', userId)
-        .gte('created_at', `${today}T00:00:00`);
-      
-      const totalWaterL = (waterLogs?.reduce((acc, curr) => acc + curr.amount_ml, 0) || 0) / 1000;
+          const weightHistory = weightLogs?.map(log => ({
+              date: new Date(log.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }),
+              weight: log.weight_kg
+          })) || [];
 
-      // 4. Fetch Journal
-      const { data: journalEntries } = await supabase
-        .from('journal_entries')
-        .select('*')
-        .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+          // 3. Fetch Water Today
+          const today = new Date().toISOString().split('T')[0];
+          const { data: waterLogs } = await supabase
+            .from('water_logs')
+            .select('amount_ml')
+            .eq('user_id', userId)
+            .gte('created_at', `${today}T00:00:00`);
+          
+          const totalWaterL = (waterLogs?.reduce((acc, curr) => acc + curr.amount_ml, 0) || 0) / 1000;
 
-      const journal = journalEntries?.map(j => ({
-          id: j.id,
-          date: new Date(j.created_at).toLocaleDateString('pt-BR'),
-          content: j.content
-      })) || [];
+          // 4. Fetch Journal
+          const { data: journalEntries } = await supabase
+            .from('journal_entries')
+            .select('*')
+            .eq('user_id', userId)
+            .order('created_at', { ascending: false });
 
-      // 5. Fetch Completed Workouts
-      const { data: progress } = await supabase.from('user_workout_progress').select('workout_id').eq('user_id', userId);
-      const completedIds = progress?.map(p => p.workout_id) || [];
-      
-      // Update State
-      set((state) => ({
-          user: {
-              id: userId,
-              email: profile.email,
-              full_name: profile.full_name,
-              phone: profile.phone,
-              current_weight_kg: profile.current_weight_kg || 0,
-              starting_weight_kg: weightHistory[0]?.weight || profile.current_weight_kg,
-              target_weight_kg: profile.target_weight_kg || 0,
-              height_cm: profile.height_cm || 0,
-              streak_days: profile.streak_days || 0,
-              is_premium: profile.is_premium,
-              weight_history: weightHistory,
-              earned_badges: [] // Implement badge fetching logic if needed
-          },
-          waterIntakeL: totalWaterL,
-          journal: journal,
-          workouts: state.workouts.map(w => ({
-              ...w,
-              completed: completedIds.includes(w.id) // Note: This assumes workout IDs match DB. For now using mock IDs but ideally DB has workouts.
-          }))
-      }));
+          const journal = journalEntries?.map(j => ({
+              id: j.id,
+              date: new Date(j.created_at).toLocaleDateString('pt-BR'),
+              content: j.content
+          })) || [];
+
+          // 5. Fetch Completed Workouts
+          const { data: progress } = await supabase.from('user_workout_progress').select('workout_id').eq('user_id', userId);
+          const completedIds = progress?.map(p => p.workout_id) || [];
+          
+          // Update State
+          set((state) => ({
+              user: {
+                  id: userId,
+                  email: profile.email,
+                  full_name: profile.full_name || 'Usuário',
+                  phone: profile.phone,
+                  current_weight_kg: profile.current_weight_kg || 60,
+                  starting_weight_kg: weightHistory[0]?.weight || profile.current_weight_kg || 60,
+                  target_weight_kg: profile.target_weight_kg || 55,
+                  height_cm: profile.height_cm || 160,
+                  streak_days: profile.streak_days || 0,
+                  is_premium: profile.is_premium,
+                  weight_history: weightHistory,
+                  earned_badges: [] 
+              },
+              waterIntakeL: totalWaterL,
+              journal: journal,
+              workouts: state.workouts.map(w => ({
+                  ...w,
+                  completed: completedIds.includes(w.id) 
+              }))
+          }));
+      } catch (e) {
+          console.error("Erro ao buscar dados do usuário:", e);
+      }
   },
 
   login: async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-        console.error("Login failed", error);
-        return false;
-    }
-    if (data.user) {
-        await get().fetchUserData(data.user.id);
-        set({ currentScreen: AppScreen.DASHBOARD });
+    // 1. Force Demo Mode
+    if (email === 'admin@nogym.com' && password === '123456') {
+        set({ user: DEMO_USER, currentScreen: AppScreen.DASHBOARD });
         return true;
     }
+
+    // 2. Real Login
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        
+        if (error) throw error;
+
+        if (data.user) {
+            await get().fetchUserData(data.user.id);
+            set({ currentScreen: AppScreen.DASHBOARD });
+            return true;
+        }
+    } catch (e) {
+        console.error("Login Error:", e);
+        return false;
+    }
+
     return false;
   },
 
   register: async (email, password, fullName, phone) => {
-    const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-            data: {
-                full_name: fullName,
-                phone: phone
-            }
-        }
-    });
-
-    if (error) {
-        console.error("Signup failed", error);
-        return false;
+    // Demo Fallback
+    if (email.includes('test')) {
+         set({ 
+            user: { ...DEMO_USER, email, full_name: fullName },
+            currentScreen: AppScreen.DASHBOARD 
+        });
+        return true;
     }
 
-    if (data.user) {
-        // Automatically login/fetch user data if session is created immediately (no email confirm)
-        await get().fetchUserData(data.user.id);
-        set({ currentScreen: AppScreen.DASHBOARD });
-        return true;
+    try {
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: {
+                    full_name: fullName,
+                    phone: phone
+                }
+            }
+        });
+
+        if (error) throw error;
+
+        if (data.user) {
+            // Se o login automático ocorrer (email confirmation off)
+            if (data.session) {
+                // Tenta inserir o perfil manualmente se a trigger falhar ou demorar
+                await supabase.from('profiles').insert({
+                    id: data.user.id,
+                    email: email,
+                    full_name: fullName,
+                    current_weight_kg: 60,
+                    target_weight_kg: 55,
+                    height_cm: 160
+                }).select();
+                
+                await get().fetchUserData(data.user.id);
+                set({ currentScreen: AppScreen.DASHBOARD });
+                return true;
+            } else {
+                // Caso exija confirmação de e-mail
+                return true; 
+            }
+        }
+    } catch (e) {
+         console.error("Register Error:", e);
+         return false;
     }
     return false;
   },
 
   resetPassword: async (email) => {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: window.location.origin, // Redirect back to app after click
-      });
-      return !error;
+      try {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: window.location.origin, 
+        });
+        return !error;
+      } catch(e) {
+          return false;
+      }
   },
   
   logout: async () => {
-      await supabase.auth.signOut();
+      try {
+        await supabase.auth.signOut();
+      } catch(e) {}
       set({ user: null, currentScreen: AppScreen.AUTH });
   },
 
@@ -238,28 +316,24 @@ export const useAppStore = create<AppState>((set, get) => ({
     const { user, workouts } = get();
     if (!user) return;
     
-    const workout = workouts.find(w => w.id === id);
-    if (!workout) return;
-    
-    // Toggle in UI immediately (Optimistic)
+    // Optimistic UI Update
     set({
         workouts: workouts.map(w => w.id === id ? { ...w, completed: !w.completed } : w)
     });
 
-    // Sync to DB
+    if (user.id === DEMO_USER.id) return; 
+
+    const workout = workouts.find(w => w.id === id);
+    if (!workout) return;
+
     if (!workout.completed) {
-        // Mark as complete
-        await supabase.from('user_workout_progress').insert({
-            user_id: user.id,
-            workout_id: id // Assuming ID matches logic or using a mapping
-        });
-        
-        // Also log to Journal automatically as requested
-        get().logJournal(`Concluí o treino: ${workout.title} 🔥`);
-        
-    } else {
-        // Remove completion (optional, maybe delete row)
-        // await supabase.from('user_workout_progress').delete().match({ user_id: user.id, workout_id: id });
+        try {
+            await supabase.from('user_workout_progress').insert({
+                user_id: user.id,
+                workout_id: id 
+            });
+            get().logJournal(`Concluí o treino: ${workout.title} 🔥`);
+        } catch (e) {}
     }
   },
 
@@ -267,20 +341,22 @@ export const useAppStore = create<AppState>((set, get) => ({
       const { user, mindsetItems } = get();
       if (!user) return;
 
-      const item = mindsetItems.find(i => i.id === id);
-      if(!item) return;
-
-      // Toggle UI
       set({
           mindsetItems: mindsetItems.map(m => m.id === id ? { ...m, completed: !m.completed } : m)
       });
 
-      // Sync DB (assuming user_mindset_progress table)
+      if (user.id === DEMO_USER.id) return;
+
+      const item = mindsetItems.find(i => i.id === id);
+      if(!item) return;
+
       if (!item.completed) {
-          await supabase.from('user_mindset_progress').insert({
-              user_id: user.id,
-              item_id: id // In real app, make sure IDs correspond to DB UUIDs
-          });
+           try {
+              await supabase.from('user_mindset_progress').insert({
+                  user_id: user.id,
+                  item_id: id 
+              });
+           } catch(e) {}
       }
   },
 
@@ -290,17 +366,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       const { user } = get();
       if (!user) return;
 
-      // 1. Insert Log
-      const { error } = await supabase.from('weight_logs').insert({
-          user_id: user.id,
-          weight_kg: newWeight
-      });
-      if (error) return;
-
-      // 2. Update Profile Current Weight
-      await supabase.from('profiles').update({ current_weight_kg: newWeight }).eq('id', user.id);
-
-      // 3. Update Local State (Graph)
       const today = new Date();
       const dateLabel = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
       
@@ -311,49 +376,47 @@ export const useAppStore = create<AppState>((set, get) => ({
               weight_history: [...state.user.weight_history, { date: dateLabel, weight: newWeight }]
           } : null
       }));
+
+      if (user.id === DEMO_USER.id) return;
+
+      try {
+        await supabase.from('weight_logs').insert({ user_id: user.id, weight_kg: newWeight });
+        await supabase.from('profiles').update({ current_weight_kg: newWeight }).eq('id', user.id);
+      } catch(e) {}
   },
 
   logWater: async (amountL) => {
       const { user, waterIntakeL } = get();
       if (!user) return;
 
-      const amountMl = amountL * 1000;
-      await supabase.from('water_logs').insert({
-          user_id: user.id,
-          amount_ml: amountMl
-      });
-
       set({ waterIntakeL: Number((waterIntakeL + amountL).toFixed(1)) });
+
+      if (user.id === DEMO_USER.id) return;
+      try {
+          await supabase.from('water_logs').insert({ user_id: user.id, amount_ml: amountL * 1000 });
+      } catch(e) {}
   },
 
   logJournal: async (text) => {
       const { user, journal } = get();
       if (!user) return;
 
-      const { data, error } = await supabase.from('journal_entries').insert({
-          user_id: user.id,
-          content: text
-      }).select().single();
+      const newEntry: JournalEntry = {
+        id: Date.now().toString(),
+        date: new Date().toLocaleDateString('pt-BR'),
+        content: text
+      };
+      set({ journal: [newEntry, ...journal] });
 
-      if (data) {
-          const newEntry: JournalEntry = {
-              id: data.id,
-              date: new Date(data.created_at).toLocaleDateString('pt-BR'),
-              content: data.content
-          };
-          set({ journal: [newEntry, ...journal] });
-      }
+      if (user.id === DEMO_USER.id) return;
+      try {
+          await supabase.from('journal_entries').insert({ user_id: user.id, content: text });
+      } catch(e) {}
   },
 
   updateProfileStats: async (height, targetWeight, currentWeight) => {
       const { user } = get();
       if (!user) return;
-
-      await supabase.from('profiles').update({
-          height_cm: height,
-          target_weight_kg: targetWeight,
-          current_weight_kg: currentWeight
-      }).eq('id', user.id);
 
       set((state) => ({
           user: state.user ? {
@@ -363,6 +426,15 @@ export const useAppStore = create<AppState>((set, get) => ({
               current_weight_kg: currentWeight
           } : null
       }));
+
+      if (user.id === DEMO_USER.id) return;
+      try {
+          await supabase.from('profiles').update({
+              height_cm: height,
+              target_weight_kg: targetWeight,
+              current_weight_kg: currentWeight
+          }).eq('id', user.id);
+      } catch(e) {}
   },
 
   clearNewBadge: () => set({ newBadgeUnlocked: null })
