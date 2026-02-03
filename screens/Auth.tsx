@@ -4,31 +4,41 @@ import { Button } from '../components/Button';
 
 export const Auth: React.FC = () => {
   const { login } = useAppStore();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
   const [logoError, setLogoError] = useState(false);
   
-  // Use absolute path for public asset instead of import
   const logo = '/assets/logo.png';
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (!email || !password) {
+        setErrorMsg("Por favor, preencha todos os campos.");
+        return;
+    }
+    
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-        login();
-    }, 1500);
+    setErrorMsg('');
+    
+    const success = await login(email, password);
+    
+    if (!success) {
+        setErrorMsg("Falha ao entrar. Verifique suas credenciais.");
+        setIsLoading(false);
+    }
+    // If success, store will update screen automatically
   };
 
   return (
     <div className="h-full flex flex-col relative bg-zinc-900 w-full overflow-hidden">
         {/* Background Video/Image */}
         <div className="absolute inset-0 z-0 bg-brand-surface">
-             {/* Image: Woman doing Yoga/Pilates at home. High reliability URL. */}
              <img 
                 src="https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?q=80&w=1920&auto=format&fit=crop" 
                 className="w-full h-full object-cover opacity-60" 
                 alt="Woman doing pilates at home"
                 onError={(e) => {
-                    // Fallback: Woman stretching
                     e.currentTarget.src = "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1920&auto=format&fit=crop";
                 }}
              />
@@ -46,7 +56,6 @@ export const Auth: React.FC = () => {
                             onError={() => setLogoError(true)}
                          />
                      ) : (
-                        // Fallback Text Logo if image fails to load
                         <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-brand-accent rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-[0_0_20px_rgba(164,0,109,0.5)]">N</div>
                             <span className="text-3xl font-bold tracking-tighter text-brand-accent">NO <span className="text-white">Gym</span></span>
@@ -59,18 +68,26 @@ export const Auth: React.FC = () => {
             </div>
 
             <div className="space-y-4 w-full">
+                {errorMsg && (
+                    <div className="bg-red-500/20 border border-red-500/50 p-3 rounded-xl text-red-200 text-sm text-center">
+                        {errorMsg}
+                    </div>
+                )}
+                
                 <div className="space-y-2">
                     <input 
                         type="email" 
                         placeholder="E-mail" 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
                         className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-brand-accent transition-colors"
-                        defaultValue="ana@exemplo.com"
                     />
                     <input 
                         type="password" 
                         placeholder="Senha" 
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                         className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-brand-accent transition-colors"
-                        defaultValue="password"
                     />
                 </div>
                 

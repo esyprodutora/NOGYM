@@ -1,7 +1,5 @@
 import React from 'react';
-
 import { MobileLayout } from './components/MobileLayout';
-
 import { Dashboard } from './screens/Dashboard';
 import { Program } from './screens/Program';
 import { Recipes } from './screens/Recipes';
@@ -10,7 +8,6 @@ import { Profile } from './screens/Profile';
 import { Mindset } from './screens/Mindset';
 import { Upsell } from './screens/Upsell';
 import { Auth } from './screens/Auth';
-
 import { useAppStore } from './store/appStore';
 import { AppScreen } from './types';
 
@@ -21,28 +18,20 @@ function App() {
     switch (currentScreen) {
       case AppScreen.AUTH:
         return <Auth />;
-
       case AppScreen.DASHBOARD:
         return <Dashboard />;
-
       case AppScreen.PROGRAM:
         return <Program />;
-
       case AppScreen.RECIPES:
         return <Recipes />;
-
       case AppScreen.WORKOUT_DETAILS:
         return <WorkoutDetails />;
-
       case AppScreen.PROFILE:
         return <Profile />;
-
       case AppScreen.MINDSET:
         return <Mindset />;
-
       case AppScreen.UPSELL:
         return <Upsell />;
-
       default:
         return <Auth />;
     }
