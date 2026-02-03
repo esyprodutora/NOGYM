@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { WeightChart } from '../components/WeightChart';
+import { TrackingModal } from '../components/TrackingModal';
 import { AppScreen } from '../types';
 
 export const Dashboard: React.FC = () => {
-  const { user, workouts, selectWorkout, dailyTip, refreshDailyTip } = useAppStore();
+  const { user, workouts, selectWorkout, dailyTip, waterIntakeL, logWeight, logWater } = useAppStore();
   const [greeting, setGreeting] = useState('');
+  
+  // Modal State
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalType, setModalType] = useState<'weight' | 'water' | 'journal'>('weight');
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -14,10 +19,15 @@ export const Dashboard: React.FC = () => {
     else setGreeting('Boa noite');
   }, []);
 
-  const nextWorkout = workouts.find(w => !w.completed);
-  const totalLoss = user ? (user.starting_weight_kg - user.current_weight_kg).toFixed(1) : 0;
-  const progressToGoal = user ? ((user.starting_weight_kg - user.current_weight_kg) / (user.starting_weight_kg - user.target_weight_kg)) * 100 : 0;
+  const openModal = (type: 'weight' | 'water' | 'journal') => {
+      setModalType(type);
+      setModalOpen(true);
+  };
 
+  const nextWorkout = workouts.find(w => !w.completed);
+  // Calculates total loss based on current vs starting
+  const totalLoss = user ? (user.starting_weight_kg - user.current_weight_kg).toFixed(1) : 0;
+  
   return (
     <div className="pb-24 animate-in fade-in duration-500 bg-brand-light dark:bg-brand-dark transition-colors duration-300">
       
@@ -58,14 +68,16 @@ export const Dashboard: React.FC = () => {
 
         {/* Stats Row */}
         <div className="grid grid-cols-3 gap-3">
+             {/* Water Stat */}
              <div className="bg-white dark:bg-brand-surface p-3 rounded-2xl border border-gray-200 dark:border-brand-border flex flex-col items-center justify-center shadow-sm">
                  <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
                  </div>
-                 <span className="text-lg font-bold text-black dark:text-white">1.2L</span>
+                 <span className="text-lg font-bold text-black dark:text-white">{waterIntakeL}L</span>
                  <span className="text-[10px] text-gray-500 dark:text-brand-muted uppercase font-semibold">Hidratação</span>
              </div>
              
+             {/* Streak Stat */}
              <div className="bg-white dark:bg-brand-surface p-3 rounded-2xl border border-gray-200 dark:border-brand-border flex flex-col items-center justify-center shadow-sm">
                  <div className="w-8 h-8 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent mb-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M8.5 2.5a.5.5 0 0 0-1 0v2a.5.5 0 0 0 1 0v-2zm-2 0a.5.5 0 0 0-1 0v2a.5.5 0 0 0 1 0v-2zm-2 0a.5.5 0 0 0-1 0v2a.5.5 0 0 0 1 0v-2zM9 7H4a1 1 0 0 0-1 1v12.5a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1H9.5a.5.5 0 0 1-.5-.5V7zm8 2a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/></svg>
@@ -74,6 +86,7 @@ export const Dashboard: React.FC = () => {
                  <span className="text-[10px] text-gray-500 dark:text-brand-muted uppercase font-semibold">Sequência</span>
              </div>
 
+             {/* Recovery Stat (Static for now, but visually completes the grid) */}
              <div className="bg-white dark:bg-brand-surface p-3 rounded-2xl border border-gray-200 dark:border-brand-border flex flex-col items-center justify-center shadow-sm">
                  <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-green-500 mb-1">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
@@ -83,17 +96,26 @@ export const Dashboard: React.FC = () => {
              </div>
         </div>
 
-        {/* Quick Actions (Premium utility) */}
+        {/* Quick Actions (Functional) */}
         <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
-            <button className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-brand-surface border border-gray-200 dark:border-brand-border shrink-0 shadow-sm active:scale-95 transition-transform">
+            <button 
+                onClick={() => openModal('water')}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-brand-surface border border-gray-200 dark:border-brand-border shrink-0 shadow-sm active:scale-95 transition-transform"
+            >
                 <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">+</div>
                 <span className="text-xs font-bold text-black dark:text-white">Água</span>
             </button>
-            <button className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-brand-surface border border-gray-200 dark:border-brand-border shrink-0 shadow-sm active:scale-95 transition-transform">
+            <button 
+                onClick={() => openModal('weight')}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-brand-surface border border-gray-200 dark:border-brand-border shrink-0 shadow-sm active:scale-95 transition-transform"
+            >
                 <div className="w-5 h-5 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent font-bold text-xs">+</div>
                 <span className="text-xs font-bold text-black dark:text-white">Peso</span>
             </button>
-             <button className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-brand-surface border border-gray-200 dark:border-brand-border shrink-0 shadow-sm active:scale-95 transition-transform">
+             <button 
+                onClick={() => openModal('journal')}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-brand-surface border border-gray-200 dark:border-brand-border shrink-0 shadow-sm active:scale-95 transition-transform"
+            >
                 <div className="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-xs">+</div>
                 <span className="text-xs font-bold text-black dark:text-white">Diário</span>
             </button>
@@ -154,8 +176,20 @@ export const Dashboard: React.FC = () => {
                 </div>
             </div>
         </section>
-
       </div>
+
+      {/* Tracking Modal Component */}
+      <TrackingModal 
+        isOpen={modalOpen} 
+        onClose={() => setModalOpen(false)} 
+        title={modalType === 'weight' ? 'Registrar Peso' : modalType === 'water' ? 'Registrar Água' : 'Diário Pessoal'}
+        type={modalType}
+        onSave={(val) => {
+            if(modalType === 'weight') logWeight(Number(val));
+            if(modalType === 'water') logWater(Number(val));
+            // journal logic would go here
+        }}
+      />
     </div>
   );
 };

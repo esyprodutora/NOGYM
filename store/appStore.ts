@@ -59,6 +59,7 @@ interface AppState {
   dailyTip: DailyTip;
   selectedWorkoutId: string | null;
   theme: 'dark' | 'light';
+  waterIntakeL: number;
   
   // Actions
   setScreen: (screen: AppScreen) => void;
@@ -68,6 +69,11 @@ interface AppState {
   logout: () => void;
   toggleTheme: () => void;
   refreshDailyTip: () => void;
+  
+  // Data Logging Actions
+  logWeight: (weight: number) => void;
+  logWater: (amountL: number) => void;
+  updateProfileStats: (height: number, targetWeight: number) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -78,6 +84,7 @@ export const useAppStore = create<AppState>((set) => ({
   dailyTip: DAILY_TIPS[0],
   selectedWorkoutId: null,
   theme: 'dark',
+  waterIntakeL: 1.2, // Initial Mock Value
 
   setScreen: (screen) => set({ currentScreen: screen }),
   
@@ -90,7 +97,6 @@ export const useAppStore = create<AppState>((set) => ({
   })),
 
   login: () => {
-    // Pick a random tip on login
     const randomTip = DAILY_TIPS[Math.floor(Math.random() * DAILY_TIPS.length)];
     set({ user: MOCK_USER, currentScreen: AppScreen.DASHBOARD, dailyTip: randomTip });
   },
@@ -102,5 +108,39 @@ export const useAppStore = create<AppState>((set) => ({
   refreshDailyTip: () => {
     const randomTip = DAILY_TIPS[Math.floor(Math.random() * DAILY_TIPS.length)];
     set({ dailyTip: randomTip });
-  }
+  },
+
+  logWeight: (newWeight: number) => set((state) => {
+    if (!state.user) return state;
+    
+    // Create new date label (e.g., "15 Fev")
+    const today = new Date();
+    const dateLabel = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' }).replace('.', '');
+    
+    // Update history
+    const newHistory = [...state.user.weight_history, { date: dateLabel, weight: newWeight }];
+    
+    return {
+        user: {
+            ...state.user,
+            current_weight_kg: newWeight,
+            weight_history: newHistory
+        }
+    };
+  }),
+
+  logWater: (amountL: number) => set((state) => ({
+      waterIntakeL: Number((state.waterIntakeL + amountL).toFixed(1))
+  })),
+
+  updateProfileStats: (height: number, targetWeight: number) => set((state) => {
+      if(!state.user) return state;
+      return {
+          user: {
+              ...state.user,
+              height_cm: height,
+              target_weight_kg: targetWeight
+          }
+      };
+  })
 }));

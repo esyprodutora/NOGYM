@@ -1,16 +1,48 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { Button } from '../components/Button';
 
 export const Profile: React.FC = () => {
-  const { user, logout, theme, toggleTheme } = useAppStore();
+  const { user, logout, theme, toggleTheme, updateProfileStats } = useAppStore();
+  
+  // Edit Mode State
+  const [isEditing, setIsEditing] = useState(false);
+  const [editHeight, setEditHeight] = useState(user?.height_cm || 165);
+  const [editTarget, setEditTarget] = useState(user?.target_weight_kg || 60);
+
+  // BMI Calculation Logic
+  const calculateBMI = (weight: number, heightCm: number) => {
+      const heightM = heightCm / 100;
+      return (weight / (heightM * heightM)).toFixed(1);
+  };
+
+  const bmi = user ? calculateBMI(user.current_weight_kg, user.height_cm) : '0';
+  
+  const getBMICategory = (bmiVal: number) => {
+      if (bmiVal < 18.5) return { label: 'Abaixo do Peso', color: 'text-blue-400' };
+      if (bmiVal < 24.9) return { label: 'Peso Saudável', color: 'text-green-500' };
+      if (bmiVal < 29.9) return { label: 'Sobrepeso', color: 'text-yellow-500' };
+      return { label: 'Obesidade', color: 'text-red-500' };
+  };
+
+  const bmiInfo = getBMICategory(Number(bmi));
+
+  const handleSaveProfile = () => {
+      updateProfileStats(editHeight, editTarget);
+      setIsEditing(false);
+  };
 
   return (
     <div className="pb-24 animate-in fade-in slide-in-from-right duration-300 bg-brand-light dark:bg-brand-dark min-h-full">
         
         {/* Settings Header */}
         <div className="p-6">
-             <h1 className="text-2xl font-bold text-black dark:text-white mb-6">Configurações</h1>
+             <div className="flex justify-between items-center mb-6">
+                <h1 className="text-2xl font-bold text-black dark:text-white">Perfil</h1>
+                <button onClick={() => setIsEditing(!isEditing)} className="text-brand-accent font-semibold text-sm">
+                    {isEditing ? 'Cancelar' : 'Editar Dados'}
+                </button>
+             </div>
 
              <div className="bg-white dark:bg-brand-surface rounded-2xl p-6 border border-gray-200 dark:border-brand-border shadow-sm flex items-center gap-4 mb-6">
                 <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-accent to-black p-[2px]">
@@ -22,7 +54,57 @@ export const Profile: React.FC = () => {
                     <h2 className="text-lg font-bold text-black dark:text-white">{user?.full_name}</h2>
                     <p className="text-sm text-gray-500 dark:text-brand-muted">{user?.email}</p>
                 </div>
-                <button className="text-brand-accent text-sm font-semibold">Editar</button>
+             </div>
+
+             {/* Body Stats Section (New) */}
+             <div className="mb-6">
+                 <h3 className="text-sm font-bold text-gray-500 dark:text-brand-muted uppercase tracking-wider mb-3 px-1">Dados Corporais</h3>
+                 
+                 {isEditing ? (
+                     <div className="bg-brand-surface border border-brand-accent/30 rounded-2xl p-6 space-y-4 animate-in fade-in">
+                         <div>
+                             <label className="text-xs text-brand-muted block mb-1">Altura (cm)</label>
+                             <input 
+                                type="number" 
+                                value={editHeight} 
+                                onChange={(e) => setEditHeight(Number(e.target.value))}
+                                className="w-full bg-black/20 border border-brand-border rounded-lg p-3 text-white focus:border-brand-accent outline-none"
+                             />
+                         </div>
+                         <div>
+                             <label className="text-xs text-brand-muted block mb-1">Meta de Peso (kg)</label>
+                             <input 
+                                type="number" 
+                                value={editTarget} 
+                                onChange={(e) => setEditTarget(Number(e.target.value))}
+                                className="w-full bg-black/20 border border-brand-border rounded-lg p-3 text-white focus:border-brand-accent outline-none"
+                             />
+                         </div>
+                         <Button fullWidth onClick={handleSaveProfile}>Salvar Alterações</Button>
+                     </div>
+                 ) : (
+                    <div className="bg-white dark:bg-brand-surface rounded-2xl p-6 border border-gray-200 dark:border-brand-border shadow-sm grid grid-cols-2 gap-6">
+                        <div>
+                            <span className="block text-xs text-gray-400 dark:text-brand-muted mb-1">IMC Calculado</span>
+                            <div className="flex items-baseline gap-2">
+                                <span className="text-2xl font-bold text-black dark:text-white">{bmi}</span>
+                                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded bg-white/5 border border-white/10 ${bmiInfo.color}`}>{bmiInfo.label}</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span className="block text-xs text-gray-400 dark:text-brand-muted mb-1">Altura</span>
+                            <span className="text-2xl font-bold text-black dark:text-white">{user?.height_cm} <span className="text-sm font-normal text-gray-500">cm</span></span>
+                        </div>
+                        <div>
+                            <span className="block text-xs text-gray-400 dark:text-brand-muted mb-1">Peso Atual</span>
+                            <span className="text-2xl font-bold text-black dark:text-white">{user?.current_weight_kg} <span className="text-sm font-normal text-gray-500">kg</span></span>
+                        </div>
+                        <div>
+                            <span className="block text-xs text-gray-400 dark:text-brand-muted mb-1">Meta</span>
+                            <span className="text-2xl font-bold text-brand-accent">{user?.target_weight_kg} <span className="text-sm font-normal text-gray-500">kg</span></span>
+                        </div>
+                    </div>
+                 )}
              </div>
 
              <div className="space-y-4">
@@ -57,12 +139,6 @@ export const Profile: React.FC = () => {
                     <SettingItem icon="bell" label="Notificações" />
                  </div>
                  
-                 <div className="bg-white dark:bg-brand-surface rounded-xl overflow-hidden border border-gray-200 dark:border-brand-border shadow-sm">
-                    <SettingItem icon="help" label="Ajuda e Suporte" />
-                    <div className="h-[1px] bg-gray-100 dark:bg-brand-border mx-4"></div>
-                    <SettingItem icon="info" label="Sobre o App" />
-                 </div>
-
                  <div className="pt-4">
                      <Button variant="outline" fullWidth onClick={logout}>Sair da Conta</Button>
                  </div>
@@ -78,7 +154,6 @@ const SettingItem = ({ icon, label }: { icon: string, label: string }) => {
             case 'lock': return <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>;
             case 'shield': return <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>;
             case 'bell': return <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>;
-            case 'help': return <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>;
             default: return <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>;
         }
     }
