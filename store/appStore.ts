@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { AppScreen, UserProfile, Workout, Recipe } from '../types';
+import { AppScreen, UserProfile, Workout, Recipe, DailyTip } from '../types';
 
 // Mock Data translated to PT-BR
 const MOCK_USER: UserProfile = {
@@ -43,11 +43,20 @@ const MOCK_RECIPES: Recipe[] = [
   { id: '4', title: 'Panqueca de Banana Fit', calories: 300, time_minutes: 10, category: 'Lanche', image_url: 'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?auto=format&fit=crop&w=600&q=80' },
 ];
 
+const DAILY_TIPS: DailyTip[] = [
+    { id: '1', category: 'Mindset', title: 'Consistência > Intensidade', content: 'Não tente fazer tudo perfeito hoje. Apenas apareça. 20 minutos "mal feitos" valem mais que zero minutos.' },
+    { id: '2', category: 'Nutrição', title: 'O poder da Proteína', content: 'Incluir proteína no café da manhã reduz os desejos de açúcar em até 60% ao longo do dia.' },
+    { id: '3', category: 'Hidratação', title: 'Beba antes de comer', content: 'Muitas vezes confundimos sede com fome. Beba um copo d\'água 20 min antes das refeições.' },
+    { id: '4', category: 'Recuperação', title: 'Sono é treino', content: 'Seus músculos se regeneram enquanto você dorme. Dormir menos de 7h pode atrapalhar seus resultados.' },
+    { id: '5', category: 'Mindset', title: 'Celebre pequenas vitórias', content: 'Conseguiu fazer mais uma repetição? Sentiu-se mais disposta? Isso conta tanto quanto o número na balança.' },
+];
+
 interface AppState {
   currentScreen: AppScreen;
   user: UserProfile | null;
   workouts: Workout[];
   recipes: Recipe[];
+  dailyTip: DailyTip;
   selectedWorkoutId: string | null;
   theme: 'dark' | 'light';
   
@@ -58,15 +67,17 @@ interface AppState {
   login: () => void;
   logout: () => void;
   toggleTheme: () => void;
+  refreshDailyTip: () => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  currentScreen: AppScreen.AUTH, // Default to Auth (Start Screen)
-  user: null, // Start with no user
+  currentScreen: AppScreen.AUTH,
+  user: null,
   workouts: MOCK_WORKOUTS,
   recipes: MOCK_RECIPES,
+  dailyTip: DAILY_TIPS[0],
   selectedWorkoutId: null,
-  theme: 'dark', // Default theme
+  theme: 'dark',
 
   setScreen: (screen) => set({ currentScreen: screen }),
   
@@ -78,7 +89,18 @@ export const useAppStore = create<AppState>((set) => ({
     )
   })),
 
-  login: () => set({ user: MOCK_USER, currentScreen: AppScreen.DASHBOARD }),
+  login: () => {
+    // Pick a random tip on login
+    const randomTip = DAILY_TIPS[Math.floor(Math.random() * DAILY_TIPS.length)];
+    set({ user: MOCK_USER, currentScreen: AppScreen.DASHBOARD, dailyTip: randomTip });
+  },
+  
   logout: () => set({ user: null, currentScreen: AppScreen.AUTH }),
+  
   toggleTheme: () => set((state) => ({ theme: state.theme === 'dark' ? 'light' : 'dark' })),
+  
+  refreshDailyTip: () => {
+    const randomTip = DAILY_TIPS[Math.floor(Math.random() * DAILY_TIPS.length)];
+    set({ dailyTip: randomTip });
+  }
 }));

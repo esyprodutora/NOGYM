@@ -34,6 +34,13 @@ export interface Recipe {
   category: string;
 }
 
+export interface DailyTip {
+  id: string;
+  category: 'Mindset' | 'Nutrição' | 'Hidratação' | 'Recuperação';
+  title: string;
+  content: string;
+}
+
 export enum AppScreen {
   AUTH = 'AUTH',            // Start/Login Screen
   PROFILE = 'PROFILE',      // Settings/Account

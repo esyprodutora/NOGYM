@@ -8,18 +8,23 @@ interface DataPoint {
 export const WeightChart: React.FC<{ data: DataPoint[] }> = ({ data }) => {
   if (!data || data.length === 0) return null;
 
-  const height = 180;
-  const width = 340;
-  const padding = 20;
+  // Use a coordinate system of 100x50 units for the SVG internal logic
+  // logic: x goes 0 -> 100, y goes 0 -> 50
+  const VIEW_WIDTH = 100;
+  const VIEW_HEIGHT = 50;
+  const PADDING = 5;
 
   const weights = data.map(d => d.weight);
-  const minWeight = Math.min(...weights) - 1;
-  const maxWeight = Math.max(...weights) + 1;
+  const minWeight = Math.min(...weights) - 0.5;
+  const maxWeight = Math.max(...weights) + 0.5;
 
   // Calculate coordinates
   const points = data.map((d, i) => {
-    const x = (i / (data.length - 1)) * (width - padding * 2) + padding;
-    const y = height - ((d.weight - minWeight) / (maxWeight - minWeight)) * (height - padding * 2) - padding;
+    // X is percentage of width
+    const x = (i / (data.length - 1)) * (VIEW_WIDTH - PADDING * 2) + PADDING;
+    // Y is inverted (SVG 0 is top)
+    const normalizedWeight = (d.weight - minWeight) / (maxWeight - minWeight);
+    const y = VIEW_HEIGHT - (normalizedWeight * (VIEW_HEIGHT - PADDING * 2)) - PADDING;
     return { x, y, value: d.weight, date: d.date };
   });
 
@@ -28,12 +33,18 @@ export const WeightChart: React.FC<{ data: DataPoint[] }> = ({ data }) => {
     return acc + (i === 0 ? `M ${point.x},${point.y}` : ` L ${point.x},${point.y}`);
   }, "");
 
-  // Area under curve
-  const areaPath = `${pathData} L ${points[points.length-1].x},${height} L ${points[0].x},${height} Z`;
+  // Area under curve (close the path at bottom)
+  const areaPath = `${pathData} L ${points[points.length-1].x},${VIEW_HEIGHT} L ${points[0].x},${VIEW_HEIGHT} Z`;
 
   return (
-    <div className="w-full overflow-hidden">
-      <svg width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} className="overflow-visible">
+    <div className="w-full h-48 md:h-56 overflow-hidden relative">
+      <svg 
+        width="100%" 
+        height="100%" 
+        viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`} 
+        className="overflow-visible" 
+        preserveAspectRatio="none"
+      >
         <defs>
           <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
             <stop offset="0%" stopColor="#A4006D" stopOpacity="0.4" />
@@ -41,29 +52,32 @@ export const WeightChart: React.FC<{ data: DataPoint[] }> = ({ data }) => {
           </linearGradient>
         </defs>
         
-        {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map((tick) => {
-             const y = padding + tick * (height - 2*padding);
-             return <line key={tick} x1={padding} y1={y} x2={width-padding} y2={y} stroke="#333" strokeDasharray="4 4" strokeWidth="1" opacity="0.5" />
+        {/* Horizontal Grid lines (Subtle) */}
+        {[0.2, 0.4, 0.6, 0.8].map((tick) => {
+             const y = PADDING + tick * (VIEW_HEIGHT - 2*PADDING);
+             return <line key={tick} x1={0} y1={y} x2={VIEW_WIDTH} y2={y} stroke="#333" strokeDasharray="2 2" strokeWidth="0.2" opacity="0.3" />
         })}
 
         {/* Area Fill */}
         <path d={areaPath} fill="url(#chartGradient)" />
 
         {/* Line */}
-        <path d={pathData} fill="none" stroke="#A4006D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+        <path d={pathData} fill="none" stroke="#A4006D" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
 
-        {/* Points */}
+        {/* Points & Labels */}
         {points.map((p, i) => (
           <g key={i}>
-            <circle cx={p.x} cy={p.y} r="4" fill="#121212" stroke="#A4006D" strokeWidth="2" />
-            {/* Show label for first and last point */}
-            {(i === 0 || i === points.length - 1) && (
-                <text x={p.x} y={p.y - 12} textAnchor="middle" fill="white" fontSize="10" fontWeight="bold">
-                    {p.value}kg
+            <circle cx={p.x} cy={p.y} r="1.5" fill="#121212" stroke="#A4006D" strokeWidth="0.5" />
+            
+            {/* Show Weight Labels occasionally to avoid clutter */}
+            {(i === 0 || i === points.length - 1 || i === Math.floor(points.length/2)) && (
+                <text x={p.x} y={p.y - 4} textAnchor="middle" fill="currentColor" className="text-[3px] font-bold fill-gray-500 dark:fill-gray-300">
+                    {p.value}
                 </text>
             )}
-             <text x={p.x} y={height - 2} textAnchor="middle" fill="#666" fontSize="10">
+             
+             {/* Date Labels */}
+             <text x={p.x} y={VIEW_HEIGHT + 4} textAnchor="middle" className="text-[2.5px] fill-gray-400 dark:fill-brand-muted uppercase">
                 {p.date}
             </text>
           </g>

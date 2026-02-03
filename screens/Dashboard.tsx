@@ -1,10 +1,18 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { WeightChart } from '../components/WeightChart';
 import { AppScreen } from '../types';
 
 export const Dashboard: React.FC = () => {
-  const { user, workouts, selectWorkout } = useAppStore();
+  const { user, workouts, selectWorkout, dailyTip, refreshDailyTip } = useAppStore();
+  const [greeting, setGreeting] = useState('');
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting('Bom dia');
+    else if (hour < 18) setGreeting('Boa tarde');
+    else setGreeting('Boa noite');
+  }, []);
 
   const nextWorkout = workouts.find(w => !w.completed);
   const totalLoss = user ? (user.starting_weight_kg - user.current_weight_kg).toFixed(1) : 0;
@@ -15,7 +23,40 @@ export const Dashboard: React.FC = () => {
       
       <div className="p-6 space-y-8">
         
-        {/* Next Gen Stats Row */}
+        {/* Welcome Header */}
+        <div className="flex justify-between items-center">
+            <div>
+                <p className="text-sm text-gray-500 dark:text-brand-muted font-medium">{greeting},</p>
+                <h1 className="text-2xl font-bold text-black dark:text-white">{user?.full_name.split(' ')[0]}</h1>
+            </div>
+            <div className="flex gap-2">
+                 <button className="w-10 h-10 rounded-full bg-white dark:bg-brand-surface border border-gray-100 dark:border-brand-border flex items-center justify-center text-gray-600 dark:text-white shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+                 </button>
+            </div>
+        </div>
+
+        {/* Daily Wisdom / Tip Card (Premium Feature) */}
+        {dailyTip && (
+            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b26] to-black border border-brand-accent/20 shadow-lg p-5">
+                <div className="absolute top-0 right-0 p-3 opacity-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a1 1 0 0 0-1 1v5.59l-3.29 3.29 1.41 1.42 4-4a1 1 0 0 0 .88-1.59V7a1 1 0 0 0-1-1z"/></svg>
+                </div>
+                
+                <div className="relative z-10">
+                    <div className="flex items-center gap-2 mb-2">
+                        <span className="text-[10px] font-bold text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded uppercase tracking-wider border border-brand-accent/20">
+                            {dailyTip.category}
+                        </span>
+                        <span className="text-[10px] text-brand-muted uppercase tracking-wider">Dica do Dia</span>
+                    </div>
+                    <h3 className="text-lg font-bold text-white mb-1 leading-snug">{dailyTip.title}</h3>
+                    <p className="text-sm text-gray-400 leading-relaxed font-light">"{dailyTip.content}"</p>
+                </div>
+            </div>
+        )}
+
+        {/* Stats Row */}
         <div className="grid grid-cols-3 gap-3">
              <div className="bg-white dark:bg-brand-surface p-3 rounded-2xl border border-gray-200 dark:border-brand-border flex flex-col items-center justify-center shadow-sm">
                  <div className="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500 mb-1">
@@ -40,6 +81,22 @@ export const Dashboard: React.FC = () => {
                  <span className="text-lg font-bold text-black dark:text-white">94%</span>
                  <span className="text-[10px] text-gray-500 dark:text-brand-muted uppercase font-semibold">Recuperação</span>
              </div>
+        </div>
+
+        {/* Quick Actions (Premium utility) */}
+        <div className="flex gap-4 overflow-x-auto no-scrollbar pb-1">
+            <button className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-brand-surface border border-gray-200 dark:border-brand-border shrink-0 shadow-sm active:scale-95 transition-transform">
+                <div className="w-5 h-5 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs">+</div>
+                <span className="text-xs font-bold text-black dark:text-white">Água</span>
+            </button>
+            <button className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-brand-surface border border-gray-200 dark:border-brand-border shrink-0 shadow-sm active:scale-95 transition-transform">
+                <div className="w-5 h-5 rounded-full bg-brand-accent/20 flex items-center justify-center text-brand-accent font-bold text-xs">+</div>
+                <span className="text-xs font-bold text-black dark:text-white">Peso</span>
+            </button>
+             <button className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white dark:bg-brand-surface border border-gray-200 dark:border-brand-border shrink-0 shadow-sm active:scale-95 transition-transform">
+                <div className="w-5 h-5 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center text-purple-600 dark:text-purple-400 font-bold text-xs">+</div>
+                <span className="text-xs font-bold text-black dark:text-white">Diário</span>
+            </button>
         </div>
 
         {/* Featured Card - Next Workout */}
@@ -69,52 +126,32 @@ export const Dashboard: React.FC = () => {
             </div>
         )}
 
-        {/* Body Evolution Section (Moved from Profile) */}
+        {/* Weight Chart Section - Expanded & Cleaned Up */}
         <section>
             <div className="flex justify-between items-end mb-4">
-                <h2 className="text-lg font-bold text-black dark:text-white">Evolução Corporal</h2>
-                <span className="text-brand-accent text-sm font-semibold">-{totalLoss}kg Total</span>
-            </div>
-            
-            <div className="bg-white dark:bg-brand-surface rounded-2xl p-1 border border-gray-200 dark:border-brand-border overflow-hidden shadow-lg">
-                <div className="grid grid-cols-2 gap-0.5 bg-gray-100 dark:bg-brand-dark/50">
-                    <div className="relative aspect-[3/4] bg-gray-200 dark:bg-gray-900 group">
-                        <img src="https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover opacity-60 grayscale" alt="Antes" />
-                        <div className="absolute top-3 left-3 bg-black/70 backdrop-blur px-2 py-1 rounded text-[10px] font-bold text-white uppercase tracking-wider">01 Jan</div>
-                        <div className="absolute bottom-4 left-0 right-0 text-center">
-                            <span className="text-xl font-bold text-black dark:text-white block">{user?.starting_weight_kg}</span>
-                            <span className="text-[10px] text-gray-600 dark:text-gray-400 uppercase">Inicial</span>
-                        </div>
-                    </div>
-
-                    <div className="relative aspect-[3/4] bg-gray-200 dark:bg-gray-900 overflow-hidden">
-                            <div className="absolute inset-0 bg-brand-accent/10 z-10"></div>
-                            <img src="https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?q=80&w=800&auto=format&fit=crop" className="w-full h-full object-cover opacity-90" alt="Atual" />
-                            <div className="absolute top-3 right-3 bg-brand-accent px-2 py-1 rounded text-[10px] font-bold text-white uppercase tracking-wider shadow-lg">Atual</div>
-                            <div className="absolute bottom-4 left-0 right-0 text-center z-20">
-                            <span className="text-2xl font-bold text-white block drop-shadow-md">{user?.current_weight_kg}</span>
-                            <span className="text-[10px] text-brand-accent uppercase font-bold">Hoje</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <div className="bg-white dark:bg-brand-surface p-4 border-t border-gray-100 dark:border-brand-border">
-                    <div className="flex justify-between text-xs text-gray-500 dark:text-brand-muted mb-2">
-                        <span>Progresso da Meta</span>
-                        <span>{Math.round(progressToGoal)}%</span>
-                    </div>
-                    <div className="h-1.5 bg-gray-200 dark:bg-brand-dark rounded-full overflow-hidden">
-                        <div className="h-full bg-brand-accent" style={{ width: `${progressToGoal}%` }}></div>
-                    </div>
+                <h2 className="text-lg font-bold text-black dark:text-white">Tendência de Peso</h2>
+                <div className="flex items-center gap-1 text-xs text-brand-accent font-semibold bg-brand-accent/10 px-2 py-1 rounded">
+                    <span>-{totalLoss}kg</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
                 </div>
             </div>
-        </section>
-
-        {/* Weight Chart Section (Moved from Profile) */}
-        <section>
-            <h2 className="text-lg font-bold text-black dark:text-white mb-4">Análise de Tendência</h2>
-            <div className="bg-white dark:bg-brand-surface rounded-2xl p-4 border border-gray-200 dark:border-brand-border shadow-lg">
+            <div className="bg-white dark:bg-brand-surface rounded-3xl p-6 border border-gray-200 dark:border-brand-border shadow-lg">
                 {user?.weight_history && <WeightChart data={user.weight_history} />}
+                
+                <div className="flex justify-between mt-4 pt-4 border-t border-gray-100 dark:border-brand-border/50">
+                    <div>
+                        <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase">Inicial</span>
+                        <span className="text-sm font-bold text-black dark:text-white">{user?.starting_weight_kg}kg</span>
+                    </div>
+                    <div className="text-center">
+                        <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase">Atual</span>
+                        <span className="text-xl font-bold text-brand-accent">{user?.current_weight_kg}kg</span>
+                    </div>
+                     <div className="text-right">
+                        <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase">Meta</span>
+                        <span className="text-sm font-bold text-black dark:text-white">{user?.target_weight_kg}kg</span>
+                    </div>
+                </div>
             </div>
         </section>
 
