@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { Button } from '../components/Button';
+import { AppScreen } from '../types';
 
 type AuthView = 'login' | 'register' | 'forgot_password';
 
@@ -26,15 +27,22 @@ export const Auth: React.FC = () => {
     try {
         if (view === 'login') {
             if (!email || !password) throw new Error("Preencha e-mail e senha.");
-            const success = await login(email, password);
-            if (!success) throw new Error("E-mail ou senha incorretos.");
+            await login(email, password);
         } 
         else if (view === 'register') {
             if (!email || !password || !fullName || !phone) throw new Error("Preencha todos os campos.");
+            
             const success = await register(email, password, fullName, phone);
-            if (!success) {
-                // If register returns false without throwing, it might be a silent fail or handled in store
-                throw new Error("Erro ao criar conta. Verifique os dados ou tente outro e-mail.");
+            
+            // Se chegou aqui, não houve erro (register lançaria erro)
+            if (success) {
+                // Se a tela não mudou, significa que precisa confirmar e-mail
+                const { currentScreen } = useAppStore.getState();
+                if (currentScreen === AppScreen.AUTH) {
+                    setSuccessMsg("Conta criada com sucesso! Verifique seu e-mail para ativar a conta antes de entrar.");
+                    // Limpa formulário ou muda para login após delay
+                    setTimeout(() => setView('login'), 5000);
+                }
             }
         }
         else if (view === 'forgot_password') {
@@ -49,12 +57,15 @@ export const Auth: React.FC = () => {
         }
     } catch (err: any) {
         // Handle Supabase specific error messages for better UX
-        if (err.message?.includes('registered')) {
+        const msg = err.message || "";
+        if (msg.includes('registered') || msg.includes('exists')) {
              setErrorMsg("Este e-mail já está cadastrado. Tente fazer login.");
-        } else if (err.message?.includes('rate limit')) {
+        } else if (msg.includes('rate limit')) {
              setErrorMsg("Muitas tentativas. Aguarde um pouco.");
+        } else if (msg.includes('password')) {
+             setErrorMsg("Senha muito fraca. Use pelo menos 6 caracteres.");
         } else {
-             setErrorMsg(err.message || "Ocorreu um erro. Tente novamente.");
+             setErrorMsg(msg || "Ocorreu um erro. Tente novamente.");
         }
     } finally {
         setIsLoading(false);

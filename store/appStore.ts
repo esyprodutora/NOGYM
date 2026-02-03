@@ -135,16 +135,35 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       try {
           // 1. Fetch Profile
-          const { data: profile, error } = await supabase
+          let { data: profile, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', userId)
             .single();
           
           if (error || !profile) {
-              console.warn("Perfil não encontrado, tentando criar...", error);
-              // Opcional: Criar perfil on-the-fly se não existir (para robustez)
-              return;
+              console.warn("Perfil não encontrado. Tentando criar automaticamente (Self-Healing)...");
+              // Tenta buscar dados do Auth User para preencher o perfil
+              const { data: { user } } = await supabase.auth.getUser();
+              if (user) {
+                   const { data: newProfile, error: insertError } = await supabase.from('profiles').insert({
+                        id: userId,
+                        email: user.email,
+                        full_name: user.user_metadata?.full_name || 'Usuário',
+                        current_weight_kg: 60,
+                        target_weight_kg: 55,
+                        height_cm: 160
+                   }).select().single();
+                   
+                   if (!insertError && newProfile) {
+                       profile = newProfile;
+                   } else {
+                       console.error("Falha ao criar perfil automaticamente:", insertError);
+                       return;
+                   }
+              } else {
+                  return;
+              }
           }
 
           // 2. Fetch Weight History
@@ -210,7 +229,7 @@ export const useAppStore = create<AppState>((set, get) => ({
               }))
           }));
       } catch (e) {
-          console.error("Erro ao buscar dados do usuário:", e);
+          console.error("Erro crítico ao carregar dados:", e);
       }
   },
 
@@ -221,22 +240,20 @@ export const useAppStore = create<AppState>((set, get) => ({
         return true;
     }
 
-    // 2. Real Login
     try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         
-        if (error) throw error;
+        if (error) throw error; // Lança erro para ser pego pela UI
 
         if (data.user) {
             await get().fetchUserData(data.user.id);
             set({ currentScreen: AppScreen.DASHBOARD });
             return true;
         }
-    } catch (e) {
-        console.error("Login Error:", e);
-        return false;
+    } catch (e: any) {
+        console.error("Login Error:", e.message);
+        throw e; // Propaga erro para a tela Auth
     }
-
     return false;
   },
 
@@ -281,13 +298,14 @@ export const useAppStore = create<AppState>((set, get) => ({
                 set({ currentScreen: AppScreen.DASHBOARD });
                 return true;
             } else {
-                // Caso exija confirmação de e-mail
+                // Caso exija confirmação de e-mail, RETORNA TRUE mas não muda a tela
+                // A UI deve avisar o usuário
                 return true; 
             }
         }
-    } catch (e) {
-         console.error("Register Error:", e);
-         return false;
+    } catch (e: any) {
+         console.error("Register Error:", e.message);
+         throw e;
     }
     return false;
   },
