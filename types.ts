@@ -10,6 +10,15 @@ export interface UserProfile {
   streak_days: number;
   is_premium: boolean;
   weight_history: { date: string; weight: number }[];
+  earned_badges: string[]; // IDs of earned badges
+}
+
+export interface Badge {
+  id: string;
+  title: string;
+  description: string;
+  icon: string; // Emoji or icon name
+  color: string;
 }
 
 export interface Workout {
@@ -25,19 +34,37 @@ export interface Workout {
   completed: boolean;
 }
 
+export type RecipeCategory = 'Café da Manhã' | 'Almoço' | 'Jantar' | 'Lanche' | 'Bebidas';
+
 export interface Recipe {
   id: string;
   title: string;
   calories: number;
   time_minutes: number;
   image_url: string;
-  category: string;
+  category: RecipeCategory;
+  ingredients: string[];
+  instructions: string[];
 }
 
 export interface DailyTip {
   id: string;
   category: 'Mindset' | 'Nutrição' | 'Hidratação' | 'Recuperação';
   title: string;
+  content: string;
+}
+
+export interface MindsetItem {
+  id: string;
+  title: string;
+  duration: string;
+  type: 'Áudio' | 'Leitura' | 'Vídeo';
+  completed: boolean;
+}
+
+export interface JournalEntry {
+  id: string;
+  date: string;
   content: string;
 }
 

@@ -5,19 +5,36 @@ interface TrackingModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
-  type: 'weight' | 'water' | 'journal';
-  onSave: (value: string | number) => void;
-  currentValue?: number | string;
+  type: 'weight' | 'water' | 'journal' | 'stats';
+  onSave: (value: any) => void;
+  currentValue?: number | string | { height: number; target: number; current: number };
 }
 
 export const TrackingModal: React.FC<TrackingModalProps> = ({ isOpen, onClose, title, type, onSave, currentValue }) => {
-  const [value, setValue] = useState<string>(currentValue ? String(currentValue) : '');
+  const [value, setValue] = useState<string>(
+      type !== 'stats' && currentValue ? String(currentValue) : ''
+  );
+  
+  // Specific state for stats
+  const [height, setHeight] = useState<string>(
+      type === 'stats' && typeof currentValue === 'object' ? String(currentValue.height) : ''
+  );
+  const [target, setTarget] = useState<string>(
+      type === 'stats' && typeof currentValue === 'object' ? String(currentValue.target) : ''
+  );
+  const [current, setCurrent] = useState<string>(
+      type === 'stats' && typeof currentValue === 'object' ? String(currentValue.current) : ''
+  );
 
   if (!isOpen) return null;
 
   const handleSave = () => {
-      if (!value) return;
-      onSave(type === 'journal' ? value : Number(value));
+      if (type === 'stats') {
+          onSave({ height: Number(height), target: Number(target), current: Number(current) });
+      } else {
+          if (!value) return;
+          onSave(type === 'journal' ? value : Number(value));
+      }
       onClose();
       setValue('');
   };
@@ -56,6 +73,41 @@ export const TrackingModal: React.FC<TrackingModalProps> = ({ isOpen, onClose, t
                     </div>
                 )}
 
+                {type === 'stats' && (
+                    <div className="space-y-4">
+                        <div>
+                             <label className="text-xs text-brand-muted block mb-1">Altura (cm)</label>
+                             <input 
+                                type="number" 
+                                value={height} 
+                                onChange={(e) => setHeight(e.target.value)}
+                                className="w-full bg-black/20 border border-brand-border rounded-lg p-3 text-white focus:border-brand-accent outline-none"
+                                placeholder="Ex: 165"
+                             />
+                        </div>
+                        <div>
+                             <label className="text-xs text-brand-muted block mb-1">Peso Atual (kg)</label>
+                             <input 
+                                type="number" 
+                                value={current} 
+                                onChange={(e) => setCurrent(e.target.value)}
+                                className="w-full bg-black/20 border border-brand-border rounded-lg p-3 text-white focus:border-brand-accent outline-none"
+                                placeholder="Ex: 68.5"
+                             />
+                        </div>
+                        <div>
+                             <label className="text-xs text-brand-muted block mb-1">Meta de Peso (kg)</label>
+                             <input 
+                                type="number" 
+                                value={target} 
+                                onChange={(e) => setTarget(e.target.value)}
+                                className="w-full bg-black/20 border border-brand-border rounded-lg p-3 text-white focus:border-brand-accent outline-none"
+                                placeholder="Ex: 60"
+                             />
+                        </div>
+                    </div>
+                )}
+
                 {type === 'water' && (
                     <div className="grid grid-cols-3 gap-3">
                         {[0.25, 0.5, 1.0].map((amount) => (
@@ -82,7 +134,7 @@ export const TrackingModal: React.FC<TrackingModalProps> = ({ isOpen, onClose, t
 
                 {type !== 'water' && (
                     <Button fullWidth onClick={handleSave}>
-                        Salvar Registro
+                        Salvar
                     </Button>
                 )}
             </div>

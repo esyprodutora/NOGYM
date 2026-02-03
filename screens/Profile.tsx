@@ -3,12 +3,13 @@ import { useAppStore } from '../store/appStore';
 import { Button } from '../components/Button';
 
 export const Profile: React.FC = () => {
-  const { user, logout, theme, toggleTheme, updateProfileStats } = useAppStore();
+  const { user, logout, theme, toggleTheme, updateProfileStats, badges } = useAppStore();
   
   // Edit Mode State
   const [isEditing, setIsEditing] = useState(false);
   const [editHeight, setEditHeight] = useState(user?.height_cm || 165);
   const [editTarget, setEditTarget] = useState(user?.target_weight_kg || 60);
+  const [editCurrent, setEditCurrent] = useState(user?.current_weight_kg || 65);
 
   // BMI Calculation Logic
   const calculateBMI = (weight: number, heightCm: number) => {
@@ -28,7 +29,7 @@ export const Profile: React.FC = () => {
   const bmiInfo = getBMICategory(Number(bmi));
 
   const handleSaveProfile = () => {
-      updateProfileStats(editHeight, editTarget);
+      updateProfileStats(editHeight, editTarget, editCurrent);
       setIsEditing(false);
   };
 
@@ -56,7 +57,7 @@ export const Profile: React.FC = () => {
                 </div>
              </div>
 
-             {/* Body Stats Section (New) */}
+             {/* Body Stats Section */}
              <div className="mb-6">
                  <h3 className="text-sm font-bold text-gray-500 dark:text-brand-muted uppercase tracking-wider mb-3 px-1">Dados Corporais</h3>
                  
@@ -68,6 +69,15 @@ export const Profile: React.FC = () => {
                                 type="number" 
                                 value={editHeight} 
                                 onChange={(e) => setEditHeight(Number(e.target.value))}
+                                className="w-full bg-black/20 border border-brand-border rounded-lg p-3 text-white focus:border-brand-accent outline-none"
+                             />
+                         </div>
+                         <div>
+                             <label className="text-xs text-brand-muted block mb-1">Peso Atual (kg)</label>
+                             <input 
+                                type="number" 
+                                value={editCurrent} 
+                                onChange={(e) => setEditCurrent(Number(e.target.value))}
                                 className="w-full bg-black/20 border border-brand-border rounded-lg p-3 text-white focus:border-brand-accent outline-none"
                              />
                          </div>
@@ -105,6 +115,26 @@ export const Profile: React.FC = () => {
                         </div>
                     </div>
                  )}
+             </div>
+
+             {/* Gamification: Badges Section */}
+             <div className="mb-6">
+                <h3 className="text-sm font-bold text-gray-500 dark:text-brand-muted uppercase tracking-wider mb-3 px-1">Conquistas</h3>
+                <div className="grid grid-cols-4 gap-3">
+                    {badges.map((badge) => {
+                        const isUnlocked = user?.earned_badges.includes(badge.id);
+                        return (
+                            <div key={badge.id} className="flex flex-col items-center">
+                                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl mb-2 border-2 ${isUnlocked ? `border-transparent ${badge.color} text-white shadow-lg` : 'bg-brand-surface border-brand-border text-gray-600 grayscale opacity-50'}`}>
+                                    {badge.icon}
+                                </div>
+                                <span className={`text-[9px] text-center font-bold leading-tight ${isUnlocked ? 'text-white' : 'text-gray-600'}`}>
+                                    {badge.title}
+                                </span>
+                            </div>
+                        )
+                    })}
+                </div>
              </div>
 
              <div className="space-y-4">

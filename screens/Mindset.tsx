@@ -1,12 +1,8 @@
 import React from 'react';
+import { useAppStore } from '../store/appStore';
 
 export const Mindset: React.FC = () => {
-  const items = [
-    { title: "Visualizando Seu Sucesso", duration: "5 min", type: "Áudio", active: true },
-    { title: "Superando a Ansiedade do Platô", duration: "8 min", type: "Áudio", active: false },
-    { title: "A Disciplina do Descanso", duration: "3 min", type: "Leitura", active: false },
-    { title: "Por que não precisamos de academias", duration: "10 min", type: "Áudio", active: false },
-  ];
+  const { mindsetItems, toggleCompleteMindset } = useAppStore();
 
   return (
     <div className="pb-24 animate-in fade-in duration-300">
@@ -16,9 +12,13 @@ export const Mindset: React.FC = () => {
         </div>
 
         <div className="p-6 space-y-4">
-            {items.map((item, i) => (
-                <div key={i} className={`group p-4 rounded-xl border transition-all active:scale-[0.98] cursor-pointer flex items-center gap-4 ${item.active ? 'bg-brand-surface border-brand-accent/50 shadow-[0_0_15px_rgba(164,0,109,0.1)]' : 'bg-brand-surface/30 border-brand-border opacity-70'}`}>
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${item.active ? 'bg-brand-accent text-white' : 'bg-brand-border text-brand-muted'}`}>
+            {mindsetItems.map((item) => (
+                <div 
+                    key={item.id} 
+                    onClick={() => toggleCompleteMindset(item.id)}
+                    className={`group p-4 rounded-xl border transition-all active:scale-[0.98] cursor-pointer flex items-center gap-4 ${item.completed ? 'bg-brand-surface border-brand-accent/50 shadow-[0_0_15px_rgba(164,0,109,0.1)]' : 'bg-brand-surface/30 border-brand-border hover:border-brand-accent/30'}`}
+                >
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors ${item.completed ? 'bg-brand-accent text-white' : 'bg-brand-border text-brand-muted group-hover:text-white'}`}>
                         {item.type === 'Áudio' ? (
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                         ) : (
@@ -26,13 +26,13 @@ export const Mindset: React.FC = () => {
                         )}
                     </div>
                     <div className="flex-1">
-                        <h3 className={`font-semibold ${item.active ? 'text-white' : 'text-brand-muted'}`}>{item.title}</h3>
+                        <h3 className={`font-semibold transition-colors ${item.completed ? 'text-white' : 'text-gray-300 group-hover:text-white'}`}>{item.title}</h3>
                         <p className="text-xs text-brand-muted mt-1">{item.type} • {item.duration}</p>
                     </div>
-                    {item.active ? (
-                         <div className="w-2 h-2 rounded-full bg-brand-accent animate-pulse"></div>
+                    {item.completed ? (
+                         <div className="w-2 h-2 rounded-full bg-brand-accent shadow-[0_0_8px_#A4006D]"></div>
                     ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                        <div className="w-5 h-5 rounded-full border-2 border-brand-border group-hover:border-brand-accent/50"></div>
                     )}
                 </div>
             ))}
