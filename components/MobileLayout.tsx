@@ -1,17 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { AppScreen } from '../types';
 
 export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { currentScreen, setScreen, user, theme } = useAppStore();
+  const [logoError, setLogoError] = useState(false);
 
   const isAuth = currentScreen === AppScreen.AUTH;
   const isFullScreen = currentScreen === AppScreen.WORKOUT_DETAILS || currentScreen === AppScreen.UPSELL;
-
-  // Placeholder para o LOGOTIPO. 
-  // No futuro, substitua a string vazia abaixo pela URL da sua imagem ou import local.
-  // Exemplo: const logoUrl = require('../assets/logo.png');
-  const logoUrl = ""; 
+  
+  // Use absolute path for public asset instead of import
+  const logo = '/assets/logo.png';
 
   return (
     <div className={`min-h-screen w-full bg-neutral-900 flex items-center justify-center p-0 md:p-8 ${theme}`}>
@@ -31,11 +30,16 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
         {!isAuth && !isFullScreen && (
           <header className="pt-14 pb-2 px-6 bg-brand-light dark:bg-brand-dark flex items-center justify-between shrink-0 transition-colors duration-300">
              <div className="flex flex-col">
-                {/* LOGO PLACEHOLDER */}
+                {/* LOGO */}
                 <div className="h-8 flex items-center">
                     <div className="flex items-center gap-2">
-                         {logoUrl ? (
-                             <img src={logoUrl} alt="NO Gym Logo" className="h-8 w-auto object-contain" />
+                         {!logoError ? (
+                             <img 
+                                src={logo} 
+                                alt="NO Gym Logo" 
+                                className="h-8 w-auto object-contain" 
+                                onError={() => setLogoError(true)}
+                             />
                          ) : (
                              // Fallback to Text Logo if no image is provided
                              <div className="flex items-center gap-2">

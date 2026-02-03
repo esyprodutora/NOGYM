@@ -5,9 +5,10 @@ import { Button } from '../components/Button';
 export const Auth: React.FC = () => {
   const { login } = useAppStore();
   const [isLoading, setIsLoading] = useState(false);
-
-  // Placeholder para URL do logotipo na tela de Login
-  const logoUrl = ""; 
+  const [logoError, setLogoError] = useState(false);
+  
+  // Use absolute path for public asset instead of import
+  const logo = '/assets/logo.png';
 
   const handleLogin = () => {
     setIsLoading(true);
@@ -18,25 +19,38 @@ export const Auth: React.FC = () => {
   };
 
   return (
-    <div className="min-h-full flex flex-col relative animate-in fade-in duration-700 bg-black">
+    <div className="h-full flex flex-col relative bg-zinc-900 w-full overflow-hidden">
         {/* Background Video/Image */}
-        <div className="absolute inset-0 z-0">
-             {/* Updated image: Woman doing bodyweight exercise (calisthenics/floor work) at home, no weights */}
-             <img src="https://images.unsplash.com/photo-1609899537878-39d4a7988463?q=80&w=1000&auto=format&fit=crop" className="w-full h-full object-cover opacity-60" />
-             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-black/30"></div>
+        <div className="absolute inset-0 z-0 bg-brand-surface">
+             {/* Image: Woman doing Yoga/Pilates at home. High reliability URL. */}
+             <img 
+                src="https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?q=80&w=1920&auto=format&fit=crop" 
+                className="w-full h-full object-cover opacity-60" 
+                alt="Woman doing pilates at home"
+                onError={(e) => {
+                    // Fallback: Woman stretching
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1518611012118-696072aa579a?q=80&w=1920&auto=format&fit=crop";
+                }}
+             />
+             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-black/20"></div>
         </div>
 
         <div className="relative z-10 flex-1 flex flex-col p-8">
             <div className="mt-12 mb-auto">
                  <div className="flex items-center gap-3 mb-4">
-                     {logoUrl ? (
-                         <img src={logoUrl} alt="NO Gym Logo" className="h-12 w-auto object-contain" />
+                     {!logoError ? (
+                         <img 
+                            src={logo} 
+                            alt="NO Gym Logo" 
+                            className="h-16 w-auto object-contain" 
+                            onError={() => setLogoError(true)}
+                         />
                      ) : (
-                        // Fallback Text Logo
-                        <>
+                        // Fallback Text Logo if image fails to load
+                        <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-brand-accent rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-[0_0_20px_rgba(164,0,109,0.5)]">N</div>
                             <span className="text-3xl font-bold tracking-tighter text-brand-accent">NO <span className="text-white">Gym</span></span>
-                        </>
+                        </div>
                      )}
                 </div>
                 <h1 className="text-4xl font-bold text-white leading-tight">
