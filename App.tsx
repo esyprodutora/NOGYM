@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { MobileLayout } from './components/MobileLayout';
 import { Dashboard } from './screens/Dashboard';
 import { Program } from './screens/Program';
@@ -12,7 +12,11 @@ import { useAppStore } from './store/appStore';
 import { AppScreen } from './types';
 
 function App() {
-  const { currentScreen } = useAppStore();
+  const { currentScreen, initialize } = useAppStore();
+
+  useEffect(() => {
+    initialize();
+  }, [initialize]);
 
   const renderScreen = () => {
     switch (currentScreen) {

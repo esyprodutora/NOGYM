@@ -19,7 +19,9 @@ export const Auth: React.FC = () => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  const handleAction = async () => {
+  const handleAction = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
     setErrorMsg('');
     setSuccessMsg('');
     setIsLoading(true);
@@ -30,7 +32,7 @@ export const Auth: React.FC = () => {
             await login(email, password);
         } 
         else if (view === 'register') {
-            if (!email || !password || !fullName || !phone) throw new Error("Preencha todos os campos.");
+            if (!email || !password || !fullName) throw new Error("Preencha todos os campos obrigatórios.");
             
             const success = await register(email, password, fullName, phone);
             
@@ -56,7 +58,6 @@ export const Auth: React.FC = () => {
         const msg = err.message || "";
         console.error("Auth UI Error:", msg);
 
-        // Tratamento específico para erro de conexão (chaves inválidas)
         if (msg.includes('Failed to fetch') || msg.includes('Network request failed')) {
              setErrorMsg("Erro de Conexão: O app não conseguiu conectar ao Supabase. Verifique se as chaves em 'services/supabase.ts' estão configuradas corretamente.");
         } 
@@ -109,7 +110,7 @@ export const Auth: React.FC = () => {
                 </p>
             </div>
 
-            <div className="space-y-4 w-full mt-4">
+            <form onSubmit={handleAction} className="space-y-4 w-full mt-4">
                 {errorMsg && (
                     <div className="bg-red-500/20 border border-red-500/50 p-4 rounded-xl text-red-200 text-sm animate-in fade-in">
                         <p className="font-bold mb-1">Atenção</p>
@@ -137,6 +138,7 @@ export const Auth: React.FC = () => {
                                 value={fullName}
                                 onChange={(e) => setFullName(e.target.value)}
                                 className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-brand-accent transition-colors"
+                                required={view === 'register'}
                             />
                             <input 
                                 type="tel" 
@@ -154,6 +156,8 @@ export const Auth: React.FC = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-brand-accent transition-colors"
+                        required
+                        autoComplete="email"
                     />
                     
                     {view !== 'forgot_password' && (
@@ -163,6 +167,9 @@ export const Auth: React.FC = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-brand-accent transition-colors"
+                            required
+                            minLength={6}
+                            autoComplete={view === 'login' ? 'current-password' : 'new-password'}
                         />
                     )}
                 </div>
@@ -170,6 +177,7 @@ export const Auth: React.FC = () => {
                 {view === 'login' && (
                     <div className="flex justify-end items-center">
                         <button 
+                            type="button"
                             onClick={() => setView('forgot_password')}
                             className="text-sm text-brand-muted hover:text-white transition-colors"
                         >
@@ -178,7 +186,7 @@ export const Auth: React.FC = () => {
                     </div>
                 )}
 
-                <Button fullWidth onClick={handleAction} isLoading={isLoading}>
+                <Button fullWidth type="submit" isLoading={isLoading}>
                     {view === 'login' ? 'Entrar' : view === 'register' ? 'Criar Conta' : 'Enviar Link'}
                 </Button>
 
@@ -186,11 +194,11 @@ export const Auth: React.FC = () => {
                     {view === 'login' && (
                         <>
                             <span className="text-brand-muted text-sm">Não tem uma conta?</span>
-                            <button onClick={() => setView('register')} className="text-brand-accent font-bold text-sm">Cadastre-se</button>
+                            <button type="button" onClick={() => setView('register')} className="text-brand-accent font-bold text-sm">Cadastre-se</button>
                         </>
                     )}
                     {(view === 'register' || view === 'forgot_password') && (
-                        <button onClick={() => setView('login')} className="text-brand-muted font-bold text-sm hover:text-white">
+                        <button type="button" onClick={() => setView('login')} className="text-brand-muted font-bold text-sm hover:text-white">
                             Voltar para o Login
                         </button>
                     )}
@@ -200,6 +208,7 @@ export const Auth: React.FC = () => {
                 {view === 'login' && (
                     <div className="text-center mt-6">
                         <button 
+                            type="button"
                             onClick={() => { setEmail('admin@nogym.com'); setPassword('123456'); }}
                             className="text-[10px] text-white/20 hover:text-white/50 uppercase tracking-widest"
                         >
@@ -207,7 +216,7 @@ export const Auth: React.FC = () => {
                         </button>
                     </div>
                 )}
-            </div>
+            </form>
         </div>
     </div>
   );
