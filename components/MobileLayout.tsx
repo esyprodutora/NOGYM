@@ -18,7 +18,7 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   return (
-    <div className={`flex h-screen w-full bg-brand-light dark:bg-brand-dark text-black dark:text-white transition-colors duration-300 overflow-hidden ${theme}`}>
+    <div className={`flex h-screen w-full bg-white dark:bg-brand-dark text-black dark:text-white transition-colors duration-300 overflow-hidden ${theme}`}>
       
       {/* --- DESKTOP SIDEBAR (Visible on md+) --- */}
       <aside className="hidden md:flex w-72 flex-col border-r border-gray-200 dark:border-white/5 bg-white dark:bg-[#121212] shrink-0 transition-colors">
@@ -34,7 +34,7 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
                 className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 cursor-pointer hover:border-brand-accent/50 transition-colors"
             >
                 <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
-                    <img src="https://i.pravatar.cc/150?u=ana" className="w-full h-full object-cover" />
+                    <img src={user?.avatar_url || "https://i.pravatar.cc/150?u=ana"} className="w-full h-full object-cover" />
                 </div>
                 <div className="overflow-hidden">
                     <p className="text-sm font-bold truncate text-black dark:text-white">{user?.full_name}</p>
@@ -86,7 +86,7 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
       </aside>
 
       {/* --- MAIN CONTENT AREA --- */}
-      <main className="flex-1 flex flex-col relative overflow-hidden bg-gray-50 dark:bg-black/20">
+      <main className="flex-1 flex flex-col relative overflow-hidden bg-white dark:bg-brand-dark">
         
         {/* MOBILE HEADER (md:hidden) */}
         <header className="md:hidden h-16 bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-white/5 flex items-center justify-between px-4 shrink-0 z-30">
@@ -98,7 +98,7 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
                 onClick={() => setScreen(AppScreen.PROFILE)}
                 className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 p-0.5"
              >
-                <img src="https://i.pravatar.cc/150?u=ana" className="w-full h-full rounded-full object-cover" />
+                <img src={user?.avatar_url || "https://i.pravatar.cc/150?u=ana"} className="w-full h-full rounded-full object-cover" />
              </div>
         </header>
 

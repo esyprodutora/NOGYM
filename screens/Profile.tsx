@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAppStore } from '../store/appStore';
 import { Button } from '../components/Button';
 
 export const Profile: React.FC = () => {
-  const { user, logout, theme, toggleTheme, updateProfileStats, badges } = useAppStore();
+  const { user, logout, theme, toggleTheme, updateProfileStats, updateAvatar, badges } = useAppStore();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Edit Mode State
   const [isEditing, setIsEditing] = useState(false);
@@ -33,8 +34,29 @@ export const Profile: React.FC = () => {
       setIsEditing(false);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          
+          // Basic validation for image
+          if (!file.type.startsWith('image/')) {
+              alert('Por favor, selecione uma imagem válida.');
+              return;
+          }
+
+          // Create local URL for preview and "upload"
+          const reader = new FileReader();
+          reader.onload = (event) => {
+              if (event.target?.result) {
+                  updateAvatar(event.target.result as string);
+              }
+          };
+          reader.readAsDataURL(file);
+      }
+  };
+
   return (
-    <div className="pb-24 animate-in fade-in slide-in-from-right duration-300 bg-brand-light dark:bg-brand-dark min-h-full">
+    <div className="pb-24 animate-in fade-in slide-in-from-right duration-300 min-h-full">
         
         {/* Settings Header */}
         <div className="p-6">
@@ -46,14 +68,34 @@ export const Profile: React.FC = () => {
              </div>
 
              <div className="bg-white dark:bg-brand-surface rounded-2xl p-6 border border-gray-200 dark:border-brand-border shadow-sm flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-accent to-black p-[2px]">
-                    <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden">
-                         <img src="https://i.pravatar.cc/150?u=ana" alt="Profile" className="w-full h-full object-cover" />
+                <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="relative w-16 h-16 rounded-full bg-gradient-to-br from-brand-accent to-black p-[2px] cursor-pointer group"
+                >
+                    <div className="w-full h-full rounded-full bg-gray-800 overflow-hidden relative">
+                         <img src={user?.avatar_url || "https://i.pravatar.cc/150?u=ana"} alt="Profile" className="w-full h-full object-cover transition-opacity group-hover:opacity-70" />
+                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+                         </div>
                     </div>
                 </div>
+                <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleFileChange}
+                />
+
                 <div className="flex-1">
                     <h2 className="text-lg font-bold text-black dark:text-white">{user?.full_name}</h2>
                     <p className="text-sm text-gray-500 dark:text-brand-muted">{user?.email}</p>
+                    <button 
+                        onClick={() => fileInputRef.current?.click()}
+                        className="text-xs text-brand-accent font-semibold mt-1"
+                    >
+                        Alterar foto
+                    </button>
                 </div>
              </div>
 
@@ -128,7 +170,7 @@ export const Profile: React.FC = () => {
                                 <div className={`w-14 h-14 rounded-full flex items-center justify-center text-2xl mb-2 border-2 ${isUnlocked ? `border-transparent ${badge.color} text-white shadow-lg` : 'bg-brand-surface border-brand-border text-gray-600 grayscale opacity-50'}`}>
                                     {badge.icon}
                                 </div>
-                                <span className={`text-[9px] text-center font-bold leading-tight ${isUnlocked ? 'text-white' : 'text-gray-600'}`}>
+                                <span className={`text-[9px] text-center font-bold leading-tight ${isUnlocked ? 'text-black dark:text-white' : 'text-gray-400'}`}>
                                     {badge.title}
                                 </span>
                             </div>

@@ -30,7 +30,7 @@ const generateRecipes = (): Recipe[] => {
     const categories: { cat: RecipeCategory; baseImg: string; templates: any[] }[] = [
         { 
             cat: 'Café da Manhã', 
-            baseImg: 'https://images.unsplash.com/photo-1533089862017-5614a9311acf?q=80&w=800',
+            baseImg: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=800',
             templates: [
                 { t: 'Panqueca de Banana e Aveia', cal: 280, tags: ['Vegetariano', 'Sem Glúten'], ing: ['1 banana madura', '2 ovos', '3 colheres de aveia', 'Canela a gosto'] },
                 { t: 'Ovos Mexidos Cremosos', cal: 220, tags: ['Low Carb', 'Sem Glúten'], ing: ['2 ovos', '1 colher de requeijão light', 'Cebolinha', 'Sal e Pimenta'] },
@@ -195,6 +195,7 @@ interface AppState {
   logWater: (amountL: number) => Promise<void>;
   logJournal: (text: string) => Promise<void>;
   updateProfileStats: (height: number, targetWeight: number, currentWeight: number) => Promise<void>;
+  updateAvatar: (url: string) => Promise<void>; // NEW ACTION
   clearNewBadge: () => void;
 }
 
@@ -311,6 +312,7 @@ export const useAppStore = create<AppState>((set, get) => ({
                   height_cm: profile.height_cm || 160,
                   streak_days: profile.streak_days || 0,
                   is_premium: profile.is_premium,
+                  avatar_url: profile.avatar_url,
                   weight_history: weightHistory,
                   earned_badges: [] 
               },
@@ -518,6 +520,19 @@ export const useAppStore = create<AppState>((set, get) => ({
               target_weight_kg: targetWeight,
               current_weight_kg: currentWeight
           }).eq('id', user.id);
+      } catch(e) {}
+  },
+
+  updateAvatar: async (url: string) => {
+      const { user } = get();
+      if (!user) return;
+
+      set((state) => ({
+          user: state.user ? { ...state.user, avatar_url: url } : null
+      }));
+
+      try {
+          await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
       } catch(e) {}
   },
 

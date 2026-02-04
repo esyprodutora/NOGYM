@@ -3,7 +3,7 @@ import { useAppStore } from '../store/appStore';
 import { Recipe, RecipeCategory } from '../types';
 
 const CATEGORY_DATA: { id: RecipeCategory; title: string; image: string; subtitle: string }[] = [
-    { id: 'Café da Manhã', title: 'Café da Manhã', image: 'https://images.unsplash.com/photo-1533089862017-5614a9311acf?q=80&w=800', subtitle: 'Comece o dia com energia' },
+    { id: 'Café da Manhã', title: 'Café da Manhã', image: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=800', subtitle: 'Comece o dia com energia' },
     { id: 'Almoço', title: 'Almoço', image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800', subtitle: 'Refeições completas e saciantes' },
     { id: 'Jantar', title: 'Jantar', image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800', subtitle: 'Leve e nutritivo para a noite' },
     { id: 'Lanche', title: 'Lanches', image: 'https://images.unsplash.com/photo-1506459225024-1428097a7e18?q=80&w=800', subtitle: 'Snacks rápidos e saudáveis' },
