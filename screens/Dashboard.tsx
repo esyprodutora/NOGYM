@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useAppStore } from '../store/appStore';
 import { WeightChart } from '../components/WeightChart';
 import { TrackingModal } from '../components/TrackingModal';
@@ -26,10 +26,35 @@ export const Dashboard: React.FC = () => {
 
   const nextWorkout = workouts.find(w => !w.completed);
   
-  // BMI calculation logic
+  // --- GAMIFICATION LOGIC ---
+  const completedCount = workouts.filter(w => w.completed).length;
+  const totalWorkouts = workouts.length;
+  
+  // Level Calculation
+  const getLevel = (count: number) => {
+      if (count >= 21) return { title: 'Elite', color: 'from-fuchsia-600 to-purple-600', next: 28 };
+      if (count >= 14) return { title: 'Imparável', color: 'from-yellow-500 to-orange-500', next: 21 };
+      if (count >= 7) return { title: 'Consistente', color: 'from-blue-500 to-cyan-500', next: 14 };
+      return { title: 'Iniciante', color: 'from-brand-accent to-pink-600', next: 7 };
+  };
+  
+  const currentLevel = getLevel(completedCount);
+  const levelProgress = Math.min(100, (completedCount / totalWorkouts) * 100);
+  // Calculate progress relative to next level tier for the bar
+  const prevTierLimit = currentLevel.next === 7 ? 0 : currentLevel.next === 14 ? 7 : currentLevel.next === 21 ? 14 : 21;
+  const tierProgress = ((completedCount - prevTierLimit) / (currentLevel.next - prevTierLimit)) * 100;
+
+
+  // --- WEEKLY CONSISTENCY LOGIC ---
+  // Find current "week" block (1-7, 8-14, etc.) based on next workout
+  const currentDay = nextWorkout ? nextWorkout.day_number : 28;
+  const startDay = Math.floor((currentDay - 1) / 7) * 7 + 1;
+  const endDay = startDay + 6;
+  const weekWorkouts = workouts.filter(w => w.day_number >= startDay && w.day_number <= endDay);
+
+  // --- BMI LOGIC ---
   const heightM = user ? user.height_cm / 100 : 1.6;
   const bmiValue = user ? (user.current_weight_kg / (heightM * heightM)).toFixed(1) : "0";
-  
   const getBMICategory = (val: number) => {
      if (val < 18.5) return "Abaixo do peso";
      if (val < 24.9) return "Saudável";
@@ -38,195 +63,242 @@ export const Dashboard: React.FC = () => {
   };
   const bmiCategory = getBMICategory(Number(bmiValue));
 
-  // Gamification: Next Badge
-  const nextBadge = badges.find(b => !user?.earned_badges.includes(b.id));
+  // --- WATER VISUAL ---
+  const waterTarget = 2.5;
+  const waterPercentage = Math.min(100, (waterIntakeL / waterTarget) * 100);
+  const waterStrokeDash = 2 * Math.PI * 18; // r=18
+  const waterStrokeOffset = waterStrokeDash - (waterPercentage / 100) * waterStrokeDash;
 
   return (
     <div className="pb-24 animate-in fade-in duration-500 bg-brand-light dark:bg-brand-dark transition-colors duration-300 relative">
       
-      <div className="p-6 space-y-6">
+      <div className="p-6 space-y-8">
         
-        {/* Welcome Header */}
+        {/* HEADER */}
         <div className="flex justify-between items-center">
             <div>
-                <p className="text-sm text-gray-500 dark:text-brand-muted font-medium">{greeting},</p>
+                <p className="text-sm text-gray-500 dark:text-brand-muted font-medium mb-0.5">{greeting},</p>
                 <h1 className="text-2xl font-bold text-black dark:text-white">{user?.full_name.split(' ')[0]}</h1>
             </div>
-            <div className="flex gap-2">
-                 <button className="w-10 h-10 rounded-full bg-white dark:bg-brand-surface border border-gray-100 dark:border-brand-border flex items-center justify-center text-gray-600 dark:text-white shadow-sm">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
-                 </button>
+            <div 
+                className="w-10 h-10 rounded-full bg-white dark:bg-brand-surface border border-gray-100 dark:border-brand-border flex items-center justify-center overflow-hidden cursor-pointer"
+                onClick={() => openModal('stats')}
+            >
+                {user?.avatar_url ? (
+                    <img src={user.avatar_url} className="w-full h-full object-cover" />
+                ) : (
+                    <div className="text-brand-accent font-bold text-lg">{user?.full_name.charAt(0)}</div>
+                )}
             </div>
         </div>
 
-        {/* 1. Daily Mindset / Tip (At the top) */}
-        {dailyTip && (
-            <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b26] to-black border border-brand-accent/20 shadow-lg p-5">
-                <div className="absolute top-0 right-0 p-3 opacity-10">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 24 24" fill="white" stroke="none"><path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/><path d="M12 6a1 1 0 0 0-1 1v5.59l-3.29 3.29 1.41 1.42 4-4a1 1 0 0 0 .88-1.59V7a1 1 0 0 0-1-1z"/></svg>
-                </div>
-                <div className="relative z-10">
-                    <div className="flex items-center gap-2 mb-2">
-                        <span className="text-[10px] font-bold text-brand-accent bg-brand-accent/10 px-2 py-0.5 rounded uppercase tracking-wider border border-brand-accent/20">
-                            {dailyTip.category}
-                        </span>
+        {/* 1. VISUAL GAMIFICATION CARD (NEW) */}
+        <div className="relative rounded-3xl overflow-hidden shadow-2xl group">
+            {/* Animated Background */}
+            <div className={`absolute inset-0 bg-gradient-to-br ${currentLevel.color} opacity-90 transition-all duration-1000`}></div>
+            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+            
+            <div className="relative p-6 text-white">
+                <div className="flex justify-between items-start mb-4">
+                    <div>
+                        <span className="text-xs font-bold uppercase tracking-widest opacity-80">Nível Atual</span>
+                        <h2 className="text-3xl font-bold tracking-tight mt-1">{currentLevel.title}</h2>
                     </div>
-                    <h3 className="text-lg font-bold text-white mb-1 leading-snug">{dailyTip.title}</h3>
-                    <p className="text-sm text-gray-400 leading-relaxed font-light">"{dailyTip.content}"</p>
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 shadow-lg">
+                        <span className="text-lg font-bold">{Math.floor((completedCount / totalWorkouts) * 100)}%</span>
+                    </div>
                 </div>
-            </div>
-        )}
 
-        {/* 2. Body Composition & Trend Graph (Main Focus) */}
-        <section className="bg-white dark:bg-brand-surface rounded-3xl p-6 border border-gray-200 dark:border-brand-border shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
-                    Composição Corporal
-                </h2>
-                <button 
-                    onClick={() => openModal('stats')}
-                    className="text-xs font-bold text-brand-accent bg-brand-accent/10 px-3 py-1.5 rounded-full hover:bg-brand-accent/20 transition-colors"
-                >
-                    Editar
-                </button>
-            </div>
-
-            {/* Main Stats Grid */}
-            <div className="grid grid-cols-2 gap-8 mb-8">
-                {/* IMC */}
-                <div className="relative">
-                    <span className="block text-xs text-gray-500 dark:text-brand-muted uppercase mb-1">IMC Atual</span>
-                    <div className="flex items-end gap-2">
-                        <span className="text-4xl font-bold text-black dark:text-white">{bmiValue}</span>
-                        <div className={`mb-1.5 px-2 py-0.5 rounded text-[10px] font-bold border ${Number(bmiValue) < 25 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
-                            {bmiCategory}
+                {/* Progress Bar */}
+                <div className="space-y-2">
+                    <div className="flex justify-between text-xs font-medium opacity-90">
+                        <span>{completedCount} Treinos</span>
+                        <span>Próximo: {currentLevel.next}</span>
+                    </div>
+                    <div className="h-3 bg-black/20 rounded-full overflow-hidden backdrop-blur-sm border border-white/10">
+                        <div 
+                            className="h-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.5)] rounded-full transition-all duration-1000 ease-out relative" 
+                            style={{ width: `${tierProgress}%` }}
+                        >
+                             <div className="absolute right-0 top-0 bottom-0 w-1 bg-white shadow-[0_0_15px_rgba(255,255,255,1)]"></div>
                         </div>
                     </div>
-                </div>
-
-                {/* Weight Trend Mini Summary */}
-                <div className="flex flex-col justify-center items-end">
-                     <span className="block text-xs text-gray-500 dark:text-brand-muted uppercase mb-1">Perdido</span>
-                     <span className="text-2xl font-bold text-brand-accent">
-                         {(user!.starting_weight_kg - user!.current_weight_kg).toFixed(1)} <span className="text-sm text-gray-500">kg</span>
-                     </span>
+                    <p className="text-[10px] opacity-70 mt-1">
+                        Complete mais {currentLevel.next - completedCount} treinos para evoluir.
+                    </p>
                 </div>
             </div>
+        </div>
 
-            {/* Secondary Stats Row */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
-                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Altura</span>
-                    <span className="text-lg font-bold text-black dark:text-white">{user?.height_cm} <span className="text-xs font-normal text-gray-500">cm</span></span>
-                </div>
-                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
-                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Peso Atual</span>
-                    <span className="text-lg font-bold text-black dark:text-white">{user?.current_weight_kg} <span className="text-xs font-normal text-gray-500">kg</span></span>
-                </div>
-                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
-                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Meta</span>
-                    <span className="text-lg font-bold text-brand-accent">{user?.target_weight_kg} <span className="text-xs font-normal text-brand-accent/70">kg</span></span>
-                </div>
+        {/* 2. WEEKLY CONSISTENCY (NEW) */}
+        <section>
+            <div className="flex justify-between items-end mb-4 px-1">
+                <h3 className="text-base font-bold text-black dark:text-white">Sua Semana</h3>
+                <span className="text-xs text-brand-muted">Semana {Math.ceil(endDay / 7)} de 4</span>
             </div>
-
-            {/* Weight Chart (Restored) */}
-            <div className="pt-4 border-t border-gray-100 dark:border-brand-border/50">
-                 <h3 className="text-xs font-bold text-gray-400 dark:text-brand-muted uppercase mb-4">Tendência Real</h3>
-                 {user?.weight_history && <WeightChart data={user.weight_history} />}
+            
+            <div className="bg-white dark:bg-brand-surface p-4 rounded-2xl border border-gray-200 dark:border-brand-border shadow-sm flex justify-between items-center">
+                {weekWorkouts.map((w, index) => {
+                    const isDone = w.completed;
+                    const isLocked = w.is_locked && !isDone;
+                    
+                    return (
+                        <div key={w.id} className="flex flex-col items-center gap-2">
+                            <span className="text-[10px] text-gray-400 font-bold">D{w.day_number}</span>
+                            <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 ${
+                                isDone 
+                                ? 'bg-brand-accent border-brand-accent shadow-[0_0_10px_rgba(164,0,109,0.4)] scale-110' 
+                                : isLocked 
+                                    ? 'bg-transparent border-gray-200 dark:border-white/10 text-gray-300'
+                                    : 'bg-white dark:bg-brand-surface border-brand-accent text-brand-accent'
+                            }`}>
+                                {isDone ? (
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                ) : (
+                                    <div className={`w-2 h-2 rounded-full ${isLocked ? 'bg-gray-200 dark:bg-white/10' : 'bg-brand-accent'}`}></div>
+                                )}
+                            </div>
+                        </div>
+                    )
+                })}
             </div>
         </section>
 
-        {/* 3. Daily Tracker (Hydration, Weight Log, Daily Notes) */}
-        <section>
-            <h2 className="text-lg font-bold text-black dark:text-white mb-4">Registro Diário</h2>
-            <div className="grid grid-cols-3 gap-3">
-                {/* Water Card */}
+        {/* 3. ANALYTICS GRID */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            {/* Weight Chart Container */}
+            <section className="bg-white dark:bg-brand-surface rounded-3xl p-6 border border-gray-200 dark:border-brand-border shadow-sm relative overflow-hidden">
+                <div className="flex justify-between items-center mb-6 relative z-10">
+                    <div>
+                        <h2 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
+                            Peso
+                        </h2>
+                        <span className="text-xs text-gray-500">Tendência últimos 30 dias</span>
+                    </div>
+                    <div className="text-right">
+                         <span className="block text-2xl font-bold text-brand-accent">
+                             {(user?.current_weight_kg || 0).toFixed(1)} <span className="text-sm text-gray-500">kg</span>
+                         </span>
+                         <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border ${Number(bmiValue) < 25 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
+                            IMC {bmiValue}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="h-40 relative z-10">
+                     {user?.weight_history && <WeightChart data={user.weight_history} />}
+                </div>
+                
+                {/* Decorative background element */}
+                <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-brand-accent/5 rounded-full blur-3xl pointer-events-none"></div>
+            </section>
+
+            {/* Daily Tracker Grid */}
+            <div className="grid grid-cols-2 gap-4">
+                
+                {/* Visual Water Tracker */}
                 <button 
                     onClick={() => openModal('water')}
-                    className="bg-blue-500/10 border border-blue-500/20 hover:bg-blue-500/20 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all group"
+                    className="bg-blue-500/5 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-500/20 hover:border-blue-500 rounded-3xl p-4 flex flex-col items-center justify-center relative overflow-hidden group transition-all"
                 >
-                    <div className="w-10 h-10 rounded-full bg-blue-500 text-white flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                    {/* Circular Progress */}
+                    <div className="relative w-20 h-20 flex items-center justify-center mb-2">
+                         <svg className="w-full h-full transform -rotate-90">
+                            <circle cx="50%" cy="50%" r="18" stroke="currentColor" strokeWidth="4" fill="transparent" className="text-blue-200 dark:text-blue-900/30" />
+                            <circle 
+                                cx="50%" cy="50%" r="18" 
+                                stroke="currentColor" strokeWidth="4" fill="transparent" 
+                                strokeDasharray={waterStrokeDash}
+                                strokeDashoffset={waterStrokeOffset}
+                                strokeLinecap="round"
+                                className="text-blue-500 transition-all duration-1000 ease-out" 
+                            />
+                         </svg>
+                         <div className="absolute inset-0 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" className="text-blue-500" stroke="none"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
+                         </div>
                     </div>
-                    <div className="text-center">
-                         <span className="block text-lg font-bold text-black dark:text-white leading-none">{waterIntakeL}L</span>
+                    <div className="text-center relative z-10">
+                         <span className="block text-xl font-bold text-black dark:text-white leading-none">{waterIntakeL}L</span>
                          <span className="text-[10px] uppercase font-bold text-blue-500">Hidratação</span>
                     </div>
                 </button>
 
-                {/* Weight Log Card */}
-                <button 
-                    onClick={() => openModal('weight')}
-                    className="bg-brand-accent/10 border border-brand-accent/20 hover:bg-brand-accent/20 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all group"
-                >
-                    <div className="w-10 h-10 rounded-full bg-brand-accent text-white flex items-center justify-center shadow-lg shadow-brand-accent/30 group-hover:scale-110 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
-                    </div>
-                     <div className="text-center">
-                         <span className="block text-lg font-bold text-black dark:text-white leading-none">Pesar</span>
-                         <span className="text-[10px] uppercase font-bold text-brand-accent">Registro</span>
-                    </div>
-                </button>
+                {/* Vertical Stack for Weight & Journal */}
+                <div className="flex flex-col gap-4">
+                     <button 
+                        onClick={() => openModal('weight')}
+                        className="flex-1 bg-brand-surface border border-gray-200 dark:border-brand-border hover:border-brand-accent/50 rounded-2xl p-3 flex items-center gap-3 transition-all"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-brand-accent/10 flex items-center justify-center text-brand-accent">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                        </div>
+                        <div className="text-left">
+                            <span className="block text-xs text-gray-500 dark:text-brand-muted">Registrar</span>
+                            <span className="block text-sm font-bold text-black dark:text-white">Peso</span>
+                        </div>
+                    </button>
 
-                {/* Journal Card */}
-                <button 
-                    onClick={() => openModal('journal')}
-                    className="bg-purple-500/10 border border-purple-500/20 hover:bg-purple-500/20 rounded-2xl p-4 flex flex-col items-center justify-center gap-2 transition-all group"
-                >
-                     <div className="w-10 h-10 rounded-full bg-purple-500 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:scale-110 transition-transform">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </div>
-                     <div className="text-center">
-                         <span className="block text-lg font-bold text-black dark:text-white leading-none">Diário</span>
-                         <span className="text-[10px] uppercase font-bold text-purple-500">Notas</span>
-                    </div>
-                </button>
-            </div>
-        </section>
-
-        {/* 4. Next Achievement */}
-        {nextBadge && (
-            <div className="bg-brand-surface border border-gray-800 rounded-2xl p-4 flex items-center gap-4 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-brand-accent/20 to-transparent rounded-full blur-xl -mr-6 -mt-6"></div>
-                <div className="w-12 h-12 rounded-full bg-brand-dark border border-brand-border flex items-center justify-center text-xl grayscale opacity-50">
-                    {nextBadge.icon}
-                </div>
-                <div>
-                    <span className="text-[10px] font-bold text-brand-muted uppercase tracking-wider">Próxima Conquista</span>
-                    <h4 className="text-sm font-bold text-white">{nextBadge.title}</h4>
-                    <p className="text-xs text-brand-muted">{nextBadge.description}</p>
+                    <button 
+                        onClick={() => openModal('journal')}
+                        className="flex-1 bg-brand-surface border border-gray-200 dark:border-brand-border hover:border-purple-500/50 rounded-2xl p-3 flex items-center gap-3 transition-all"
+                    >
+                        <div className="w-8 h-8 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-500">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </div>
+                        <div className="text-left">
+                            <span className="block text-xs text-gray-500 dark:text-brand-muted">Diário</span>
+                            <span className="block text-sm font-bold text-black dark:text-white">Notas</span>
+                        </div>
+                    </button>
                 </div>
             </div>
-        )}
+        </div>
 
-        {/* 5. Today's Workout (Bottom) */}
+        {/* 4. TODAY'S WORKOUT (Bottom Hero) */}
         {nextWorkout && (
             <div>
-                 <h2 className="text-lg font-bold text-black dark:text-white mb-4">Seu Treino de Hoje</h2>
-                 <div className="relative overflow-hidden rounded-3xl cursor-pointer group shadow-xl" onClick={() => selectWorkout(nextWorkout.id)}>
-                    <div className="absolute inset-0 bg-black/40 z-10 transition-colors group-hover:bg-black/30"></div>
-                    <img src={nextWorkout.thumbnail_url} className="w-full h-48 object-cover" />
+                 <h2 className="text-lg font-bold text-black dark:text-white mb-4">Próximo Passo</h2>
+                 <div className="relative overflow-hidden rounded-[2rem] cursor-pointer group shadow-2xl" onClick={() => selectWorkout(nextWorkout.id)}>
+                    <div className="absolute inset-0 bg-black/20 z-10 transition-colors group-hover:bg-black/10"></div>
+                    <img src={nextWorkout.thumbnail_url} className="w-full h-56 object-cover transform group-hover:scale-105 transition-transform duration-700" />
                     
-                    <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-black via-black/80 to-transparent">
+                    <div className="absolute bottom-0 left-0 right-0 p-6 z-20 bg-gradient-to-t from-black via-black/60 to-transparent">
                         <div className="flex justify-between items-end">
                             <div>
-                                <span className="text-[10px] font-bold text-brand-accent bg-white/90 px-2 py-0.5 rounded backdrop-blur-sm mb-2 inline-block uppercase tracking-wider">
+                                <span className="text-[10px] font-bold text-black bg-white px-2 py-1 rounded mb-2 inline-block uppercase tracking-wider">
                                     Dia {nextWorkout.day_number}
                                 </span>
                                 <h3 className="text-2xl font-bold text-white leading-tight mb-1">{nextWorkout.title}</h3>
-                                <div className="flex items-center gap-2 text-xs text-gray-300">
-                                    <span>{nextWorkout.duration_minutes} min</span>
-                                    <span>•</span>
+                                <div className="flex items-center gap-3 text-xs text-gray-200 font-medium">
+                                    <span className="flex items-center gap-1">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                        {nextWorkout.duration_minutes} min
+                                    </span>
+                                    <span className="w-1 h-1 bg-gray-400 rounded-full"></span>
                                     <span>{nextWorkout.difficulty}</span>
                                 </div>
                             </div>
-                            <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="black" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                            <div className="w-14 h-14 bg-brand-accent rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(164,0,109,0.5)] transform group-hover:scale-110 transition-transform">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        )}
+
+        {/* 5. DAILY TIP (Moved to bottom as secondary content) */}
+        {dailyTip && (
+            <div className="bg-gray-50 dark:bg-brand-surface p-5 rounded-2xl border border-gray-200 dark:border-brand-border flex items-start gap-4">
+                 <div className="p-3 bg-brand-accent/10 rounded-xl text-brand-accent">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                 </div>
+                 <div>
+                    <span className="text-[10px] font-bold text-brand-muted uppercase tracking-wider mb-1 block">Dica do Dia • {dailyTip.category}</span>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 italic">"{dailyTip.content}"</p>
+                 </div>
             </div>
         )}
 
