@@ -74,46 +74,6 @@ const MOCK_MINDSET: MindsetItem[] = [
     },
 ];
 
-const generateRecipes = (): Recipe[] => {
-    const categories: { cat: RecipeCategory; baseImg: string; templates: any[] }[] = [
-        { 
-            cat: 'Café da Manhã', 
-            baseImg: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=800',
-            templates: [
-                { 
-                    t: 'Panqueca de Banana e Aveia', 
-                    cal: 280, 
-                    tags: ['Vegetariano', 'Sem Glúten'], 
-                    ing: ['1 banana prata madura', '2 ovos médios', '2 colheres (sopa) de farelo de aveia', '1 pitada de canela em pó', 'Óleo de coco para untar'], 
-                    inst: ['Em uma tigela pequena, amasse bem a banana com um garfo.', 'Adicione os ovos e bata até obter uma mistura homogênea.', 'Acrescente o farelo de aveia e a canela, misturando bem.', 'Aqueça uma frigideira antiaderente em fogo baixo e unte levemente com óleo de coco.', 'Despeje a massa formando pequenos discos.', 'Deixe dourar por cerca de 2 minutos de cada lado e sirva quente.']
-                },
-                { 
-                    t: 'Ovos Mexidos Cremosos', 
-                    cal: 220, 
-                    tags: ['Low Carb', 'Sem Glúten'], 
-                    ing: ['2 ovos grandes', '1 colher (sopa) de requeijão light ou creme de ricota', 'Cebolinha picada a gosto', 'Sal e Pimenta do reino a gosto', '1 fio de azeite'], 
-                    inst: ['Em um bowl, bata os ovos ligeiramente com um garfo.', 'Tempere com sal e pimenta.', 'Aqueça o azeite em uma frigideira antiaderente em fogo baixo.', 'Despeje os ovos e mexa suavemente com uma espátula, trazendo as bordas para o centro.', 'Quando estiverem quase cozidos, mas ainda úmidos, desligue o fogo.', 'Misture o requeijão rapidamente para dar cremosidade.', 'Finalize com a cebolinha picada e sirva.']
-                },
-                // ... (remaining recipes kept as is, but ensuring updatePassword below works)
-            ]
-        },
-        // ... (other categories would be here, truncating for brevity as requested to focus on changes, but assume existing data remains)
-    ];
-    // Re-using the full generateRecipes logic from previous step implicitly
-    // Ideally I would copy the full content here, but for the XML diff, I focus on the actions and badges
-    return []; // Placeholder for diff context
-}; 
-
-// RESTORING MOCK_RECIPES Logic for context (Since I cannot partly edit a function easily in this format without full file content)
-// I will assume the previous file content for recipes stands, and I'm updating the store Actions and Constants.
-
-const MOCK_RECIPES_FULL = (() => {
-    // ... Copy of the full generateRecipes function logic from previous turn ...
-    // Since I need to output the FULL file content, I will paste the full previous logic + new changes.
-    // See below for full file content.
-    return [];
-})();
-
 // --- WORKOUTS (28 DAYS GENERATOR) ---
 const generateMockWorkouts = (): Workout[] => {
     return Array.from({ length: 28 }, (_, i) => {
@@ -136,16 +96,6 @@ const generateMockWorkouts = (): Workout[] => {
 
 const MOCK_WORKOUTS: Workout[] = generateMockWorkouts();
 
-// Helper to generate full recipes list properly
-const getFullRecipes = (): Recipe[] => {
-    // ... (Use the detailed generation logic from previous turn)
-    // To ensure I don't break the app, I'll use a simplified version here but with the correct structure
-    // In a real scenario I'd keep the code from the previous turn exactly.
-    // For this XML output I will assume the `generateRecipes` function is defined as in the previous turn.
-    // I will include the FULL FILE content below to be safe.
-    return [];
-}
-
 interface AppState {
   currentScreen: AppScreen;
   user: UserProfile | null;
@@ -166,7 +116,7 @@ interface AppState {
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, fullName: string, phone: string) => Promise<boolean>;
   resetPassword: (email: string) => Promise<boolean>;
-  updatePassword: (password: string) => Promise<boolean>; // NEW ACTION
+  updatePassword: (password: string) => Promise<boolean>;
   logout: () => void;
   selectWorkout: (id: string) => void;
   toggleCompleteWorkout: (id: string) => void;
@@ -184,12 +134,11 @@ interface AppState {
   clearNewBadge: () => void;
 }
 
-// FULL IMPLEMENTATION
 export const useAppStore = create<AppState>((set, get) => ({
   currentScreen: AppScreen.AUTH,
   user: null,
   workouts: MOCK_WORKOUTS,
-  recipes: [], // Will be populated
+  recipes: [], // Will be populated in initialize
   badges: BADGES,
   dailyTip: DAILY_TIPS[0],
   mindsetItems: MOCK_MINDSET,
@@ -320,7 +269,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       } catch(e) { return false; }
   },
 
-  // NEW ACTION
   updatePassword: async (password) => {
       try {
           const { error } = await supabase.auth.updateUser({ password: password });
@@ -431,23 +379,94 @@ export const useAppStore = create<AppState>((set, get) => ({
   clearNewBadge: () => set({ newBadgeUnlocked: null })
 }));
 
-// Internal Helper for Recipe Gen (Restored)
+// --- RECIPE GENERATOR ---
 function generateRecipesFull(): Recipe[] {
-    const categories: { cat: RecipeCategory; baseImg: string; templates: any[] }[] = [
-        { 
-            cat: 'Café da Manhã', 
-            baseImg: 'https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=800',
-            templates: [
-                { t: 'Panqueca de Banana', cal: 280, tags: ['Veg'], ing: ['1 banana', '2 ovos'], inst: ['Amasse a banana', 'Misture ovos', 'Frite'] },
-                 // ... In real app, this is the full list from previous prompt. 
-                 // I am keeping it short here to respect output limits but ensuring the function exists for the store.
-            ]
-        }
-    ];
-    // Re-implementing the basic generation loop so the store works
-    const allRecipes: Recipe[] = [];
+    let allRecipes: Recipe[] = [];
     let idCounter = 1;
-     // Quick mock fill to ensure app doesn't crash if I can't paste 500 lines
-    // In production, the previous full content would be preserved.
-    return []; 
+
+    const modifiers = ['Delicioso', 'Rápido', 'Nutritivo', 'Fit', 'Especial', 'da Casa', 'Supremo', 'Leve', 'Energético', 'Funcional'];
+    
+    // TEMPLATES
+    // BREAKFAST
+    const breakfastTemplates = [
+        { t: 'Panqueca de Banana', cal: 280, tags: ['Vegetariano', 'Sem Glúten'], baseIng: ['1 banana prata', '2 ovos', '2 colheres de aveia'], baseInst: ['Amasse a banana', 'Misture com ovos e aveia', 'Grelhe em frigideira untada'] },
+        { t: 'Ovos Mexidos Cremosos', cal: 220, tags: ['Low Carb', 'Sem Glúten', 'Proteico'], baseIng: ['2 ovos', '1 colher de requeijão light', 'Cebolinha'], baseInst: ['Bata os ovos com sal', 'Mexa na frigideira em fogo baixo', 'Adicione requeijão no final'] },
+        { t: 'Mingau de Aveia', cal: 300, tags: ['Vegano', 'Fibras'], baseIng: ['3 colheres de aveia', '200ml de leite vegetal', 'Canela'], baseInst: ['Cozinhe a aveia com leite', 'Mexa até engrossar', 'Polvilhe canela'] },
+        { t: 'Tostada de Abacate', cal: 250, tags: ['Vegetariano'], baseIng: ['1 fatia pão integral', '1/4 abacate', '1 ovo cozido'], baseInst: ['Toste o pão', 'Amasse o abacate e tempere', 'Coloque o ovo fatiado por cima'] },
+        { t: 'Smoothie Bowl Vermelho', cal: 200, tags: ['Vegano', 'Sem Lactose'], baseIng: ['1 xícara frutas vermelhas', '1 banana congelada', '50ml água'], baseInst: ['Bata tudo no liquidificador até ficar cremoso', 'Sirva com granola'] },
+        { t: 'Crepioca Recheada', cal: 260, tags: ['Sem Glúten', 'Prático'], baseIng: ['1 ovo', '2 colheres goma de tapioca', 'Queijo cotage'], baseInst: ['Misture ovo e goma', 'Faça o disco na frigideira', 'Recheie com queijo'] }
+    ];
+
+    // MEALS (Lunch/Dinner)
+    const mealTemplates = [
+        { t: 'Filé de Frango Grelhado', cal: 350, tags: ['Proteico', 'Low Carb', 'Sem Glúten'], baseIng: ['150g peito de frango', 'Limão', 'Mix de folhas'], baseInst: ['Tempere o frango com limão e sal', 'Grelhe até dourar', 'Sirva com salada variada'] },
+        { t: 'Salada de Grão de Bico', cal: 320, tags: ['Vegano', 'Sem Glúten', 'Fibras'], baseIng: ['1 xícara grão de bico cozido', 'Tomate cereja', 'Pepino'], baseInst: ['Misture todos os vegetais', 'Tempere com azeite, limão e sal'] },
+        { t: 'Tilápia ao Forno', cal: 300, tags: ['Proteico', 'Leve'], baseIng: ['Filé de tilápia', 'Ervas finas', 'Brócolis cozido'], baseInst: ['Tempere o peixe com ervas', 'Asse por 20min a 180ºC', 'Sirva com brócolis'] },
+        { t: 'Risoto de Couve-Flor', cal: 250, tags: ['Low Carb', 'Vegetariano'], baseIng: ['Couve-flor triturada', 'Queijo parmesão', 'Caldo de legumes'], baseInst: ['Refogue a couve-flor no azeite', 'Adicione o caldo aos poucos', 'Finalize com queijo ralado'] },
+        { t: 'Wrap de Atum', cal: 380, tags: ['Prático', 'Proteico'], baseIng: ['1 pão folha integral', '1 lata de atum', 'Alface e tomate'], baseInst: ['Misture atum com 1 colher de maionese light', 'Espalhe no pão', 'Enrole com salada'] },
+        { t: 'Escondidinho Fit', cal: 400, tags: ['Sem Glúten', 'Pré-Treino'], baseIng: ['Batata doce cozida', 'Carne moída magra', 'Cheiro verde'], baseInst: ['Faça um purê com a batata', 'Refogue a carne', 'Monte camadas e asse por 15min'] },
+        { t: 'Macarrão de Abobrinha', cal: 180, tags: ['Low Carb', 'Vegano'], baseIng: ['1 abobrinha fatiada fina', 'Molho de tomate caseiro', 'Manjericão'], baseInst: ['Fatie a abobrinha como espaguete', 'Refogue por 2 min', 'Adicione o molho quente'] }
+    ];
+
+    // SNACKS
+    const snackTemplates = [
+        { t: 'Chips de Batata Doce', cal: 150, tags: ['Vegano', 'Sem Glúten'], baseIng: ['1 batata doce', 'Azeite', 'Alecrim'], baseInst: ['Fatie a batata bem fina', 'Tempere com azeite', 'Asse até ficar crocante'] },
+        { t: 'Muffin Proteico', cal: 180, tags: ['Proteico', 'Vegetariano'], baseIng: ['2 ovos', '1 scoop Whey protein', '1 banana'], baseInst: ['Misture todos os ingredientes', 'Coloque em forminhas', 'Asse por 15min'] },
+        { t: 'Iogurte com Chia', cal: 160, tags: ['Vegetariano', 'Probiótico'], baseIng: ['1 pote iogurte natural', '1 colher chia', 'Fio de mel'], baseInst: ['Misture a chia no iogurte', 'Deixe hidratar por 10min', 'Adoce com mel'] },
+        { t: 'Mix de Castanhas', cal: 200, tags: ['Vegano', 'Gorduras Boas'], baseIng: ['2 nozes', '2 castanhas do Pará', '5 amêndoas'], baseInst: ['Separe as porções em potinhos', 'Consuma nos lanches'] },
+        { t: 'Ovo de Codorna Temperado', cal: 140, tags: ['Low Carb', 'Proteico'], baseIng: ['6 ovos de codorna', 'Orégano', 'Azeite'], baseInst: ['Cozinhe os ovos', 'Descasque e tempere'] }
+    ];
+
+    // DRINKS
+    const drinkTemplates = [
+        { t: 'Suco Verde Detox', cal: 80, tags: ['Vegano', 'Detox'], baseIng: ['1 folha de couve', 'Suco de 1 limão', 'Gengibre', '200ml água'], baseInst: ['Bata tudo no liquidificador', 'Coe se preferir', 'Sirva gelado'] },
+        { t: 'Chá de Hibisco Gelado', cal: 5, tags: ['Vegano', 'Diurético'], baseIng: ['1 colher hibisco seco', '500ml água quente', 'Gelo'], baseInst: ['Faça a infusão por 5 min', 'Deixe esfriar', 'Sirva com muito gelo'] },
+        { t: 'Shake de Cacau', cal: 220, tags: ['Vegetariano', 'Proteico'], baseIng: ['200ml leite desnatado', '1 colher cacau 100%', '1 scoop Whey'], baseInst: ['Bata no liquidificador com gelo', 'Beba pós-treino'] },
+        { t: 'Água Aromatizada', cal: 0, tags: ['Vegano', 'Hidratação'], baseIng: ['1 litro água', 'Rodelas de limão', 'Ramos de hortelã'], baseInst: ['Coloque tudo numa jarra', 'Deixe curtir por 1h na geladeira'] },
+        { t: 'Golden Milk', cal: 120, tags: ['Anti-inflamatório', 'Vegetariano'], baseIng: ['200ml leite vegetal', '1 colher cúrcuma', 'Pimenta preta'], baseInst: ['Aqueça o leite', 'Misture as especiarias', 'Beba morno antes de dormir'] }
+    ];
+
+    // Generator Helper
+    const createVariations = (baseList: any[], category: string, count: number) => {
+        const result = [];
+        let i = 0;
+        
+        while(result.length < count) {
+            const template = baseList[i % baseList.length];
+            const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+            
+            // Image Logic (Placeholders by Category)
+            let img = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800'; 
+            if(category === 'Café da Manhã') img = 'https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=800';
+            if(category === 'Almoço') img = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800';
+            if(category === 'Jantar') img = 'https://images.unsplash.com/photo-1467003909585-2f8a7270028d?q=80&w=800';
+            if(category === 'Lanche') img = 'https://images.unsplash.com/photo-1506459225024-1428097a7e18?q=80&w=800';
+            if(category === 'Bebidas') img = 'https://images.unsplash.com/photo-1544145945-f90425340c7e?q=80&w=800';
+
+            // Create Recipe Object
+            result.push({
+                id: `rec_${category.substring(0,3)}_${idCounter++}`,
+                title: `${template.t} ${modifier}`,
+                calories: template.cal + Math.floor(Math.random() * 40 - 20),
+                time_minutes: 10 + Math.floor(Math.random() * 20),
+                image_url: img,
+                category: category as RecipeCategory,
+                ingredients: template.baseIng,
+                instructions: template.baseInst,
+                tags: template.tags || []
+            });
+            i++;
+        }
+        return result;
+    }
+
+    allRecipes = [
+        ...createVariations(breakfastTemplates, 'Café da Manhã', 30),
+        ...createVariations(mealTemplates, 'Almoço', 30),
+        ...createVariations(mealTemplates, 'Jantar', 30),
+        ...createVariations(snackTemplates, 'Lanche', 30),
+        ...createVariations(drinkTemplates, 'Bebidas', 30)
+    ];
+
+    return allRecipes;
 }
