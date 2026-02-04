@@ -59,7 +59,7 @@ export const Dashboard: React.FC = () => {
             </div>
         </div>
 
-        {/* Daily Wisdom / Tip Card */}
+        {/* 1. Daily Mindset / Tip (At the top) */}
         {dailyTip && (
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b26] to-black border border-brand-accent/20 shadow-lg p-5">
                 <div className="absolute top-0 right-0 p-3 opacity-10">
@@ -77,7 +77,67 @@ export const Dashboard: React.FC = () => {
             </div>
         )}
 
-        {/* --- DAILY TRACKER --- */}
+        {/* 2. Body Composition & Trend Graph (Main Focus) */}
+        <section className="bg-white dark:bg-brand-surface rounded-3xl p-6 border border-gray-200 dark:border-brand-border shadow-sm">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
+                    Composição Corporal
+                </h2>
+                <button 
+                    onClick={() => openModal('stats')}
+                    className="text-xs font-bold text-brand-accent bg-brand-accent/10 px-3 py-1.5 rounded-full hover:bg-brand-accent/20 transition-colors"
+                >
+                    Editar
+                </button>
+            </div>
+
+            {/* Main Stats Grid */}
+            <div className="grid grid-cols-2 gap-8 mb-8">
+                {/* IMC */}
+                <div className="relative">
+                    <span className="block text-xs text-gray-500 dark:text-brand-muted uppercase mb-1">IMC Atual</span>
+                    <div className="flex items-end gap-2">
+                        <span className="text-4xl font-bold text-black dark:text-white">{bmiValue}</span>
+                        <div className={`mb-1.5 px-2 py-0.5 rounded text-[10px] font-bold border ${Number(bmiValue) < 25 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
+                            {bmiCategory}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Weight Trend Mini Summary */}
+                <div className="flex flex-col justify-center items-end">
+                     <span className="block text-xs text-gray-500 dark:text-brand-muted uppercase mb-1">Perdido</span>
+                     <span className="text-2xl font-bold text-brand-accent">
+                         {(user!.starting_weight_kg - user!.current_weight_kg).toFixed(1)} <span className="text-sm text-gray-500">kg</span>
+                     </span>
+                </div>
+            </div>
+
+            {/* Secondary Stats Row */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
+                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Altura</span>
+                    <span className="text-lg font-bold text-black dark:text-white">{user?.height_cm} <span className="text-xs font-normal text-gray-500">cm</span></span>
+                </div>
+                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
+                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Peso Atual</span>
+                    <span className="text-lg font-bold text-black dark:text-white">{user?.current_weight_kg} <span className="text-xs font-normal text-gray-500">kg</span></span>
+                </div>
+                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
+                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Meta</span>
+                    <span className="text-lg font-bold text-brand-accent">{user?.target_weight_kg} <span className="text-xs font-normal text-brand-accent/70">kg</span></span>
+                </div>
+            </div>
+
+            {/* Weight Chart (Restored) */}
+            <div className="pt-4 border-t border-gray-100 dark:border-brand-border/50">
+                 <h3 className="text-xs font-bold text-gray-400 dark:text-brand-muted uppercase mb-4">Tendência Real</h3>
+                 {user?.weight_history && <WeightChart data={user.weight_history} />}
+            </div>
+        </section>
+
+        {/* 3. Daily Tracker (Hydration, Weight Log, Daily Notes) */}
         <section>
             <h2 className="text-lg font-bold text-black dark:text-white mb-4">Registro Diário</h2>
             <div className="grid grid-cols-3 gap-3">
@@ -125,7 +185,7 @@ export const Dashboard: React.FC = () => {
             </div>
         </section>
 
-        {/* --- NEXT ACHIEVEMENT TEASER (Gamification) --- */}
+        {/* 4. Next Achievement */}
         {nextBadge && (
             <div className="bg-brand-surface border border-gray-800 rounded-2xl p-4 flex items-center gap-4 relative overflow-hidden">
                 <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-brand-accent/20 to-transparent rounded-full blur-xl -mr-6 -mt-6"></div>
@@ -140,7 +200,7 @@ export const Dashboard: React.FC = () => {
             </div>
         )}
 
-        {/* Next Workout */}
+        {/* 5. Today's Workout (Bottom) */}
         {nextWorkout && (
             <div>
                  <h2 className="text-lg font-bold text-black dark:text-white mb-4">Seu Treino de Hoje</h2>
@@ -169,66 +229,6 @@ export const Dashboard: React.FC = () => {
                 </div>
             </div>
         )}
-
-        {/* --- BODY COMPOSITION CARD (Moved to Bottom) --- */}
-        <section className="bg-white dark:bg-brand-surface rounded-3xl p-6 border border-gray-200 dark:border-brand-border shadow-sm mt-8">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
-                    Composição Corporal
-                </h2>
-                <button 
-                    onClick={() => openModal('stats')}
-                    className="text-xs font-bold text-brand-accent bg-brand-accent/10 px-3 py-1.5 rounded-full hover:bg-brand-accent/20 transition-colors"
-                >
-                    Editar Dados
-                </button>
-            </div>
-
-            {/* Main Stats Grid */}
-            <div className="grid grid-cols-2 gap-8 mb-8">
-                {/* IMC */}
-                <div className="relative">
-                    <span className="block text-xs text-gray-500 dark:text-brand-muted uppercase mb-1">IMC Atual</span>
-                    <div className="flex items-end gap-2">
-                        <span className="text-4xl font-bold text-black dark:text-white">{bmiValue}</span>
-                        <div className={`mb-1.5 px-2 py-0.5 rounded text-[10px] font-bold border ${Number(bmiValue) < 25 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
-                            {bmiCategory}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Weight Trend Mini Summary */}
-                <div className="flex flex-col justify-center items-end">
-                     <span className="block text-xs text-gray-500 dark:text-brand-muted uppercase mb-1">Perdido</span>
-                     <span className="text-2xl font-bold text-brand-accent">
-                         {(user!.starting_weight_kg - user!.current_weight_kg).toFixed(1)} <span className="text-sm text-gray-500">kg</span>
-                     </span>
-                </div>
-            </div>
-
-            {/* Secondary Stats Row */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
-                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Altura</span>
-                    <span className="text-lg font-bold text-black dark:text-white">{user?.height_cm} <span className="text-xs font-normal text-gray-500">cm</span></span>
-                </div>
-                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
-                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Peso Atual</span>
-                    <span className="text-lg font-bold text-black dark:text-white">{user?.current_weight_kg} <span className="text-xs font-normal text-gray-500">kg</span></span>
-                </div>
-                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
-                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Meta</span>
-                    <span className="text-lg font-bold text-brand-accent">{user?.target_weight_kg} <span className="text-xs font-normal text-brand-accent/70">kg</span></span>
-                </div>
-            </div>
-
-            {/* Weight Chart Integration */}
-            <div className="pt-4 border-t border-gray-100 dark:border-brand-border/50">
-                 <h3 className="text-xs font-bold text-gray-400 dark:text-brand-muted uppercase mb-4">Tendência Real</h3>
-                 {user?.weight_history && <WeightChart data={user.weight_history} />}
-            </div>
-        </section>
 
       </div>
 

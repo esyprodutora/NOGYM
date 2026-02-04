@@ -67,13 +67,30 @@ const generateRecipes = (): Recipe[] => {
 
 const MOCK_RECIPES: Recipe[] = []; // In real code, use generateRecipes()
 
-// --- WORKOUTS (28 DAYS) ---
-const MOCK_WORKOUTS: Workout[] = [
-    { id: 'workout-1',  day_number: 1,  title: 'Treino Dia 1',  description: 'Foco em força e estabilidade.', duration_minutes: 20, difficulty: 'Iniciante', is_locked: false, completed: false, thumbnail_url: 'https://picsum.photos/seed/101/800/600', video_url: '' },
-    { id: 'workout-2',  day_number: 2,  title: 'Treino Dia 2',  description: 'Foco em força e estabilidade.', duration_minutes: 21, difficulty: 'Iniciante', is_locked: false, completed: false, thumbnail_url: 'https://picsum.photos/seed/102/800/600', video_url: '' },
-    // ... (Other workouts would be here)
-    { id: 'workout-28', day_number: 28, title: 'Treino Dia 28', description: 'Foco em força e estabilidade.', duration_minutes: 27, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/128/800/600', video_url: '' },
-];
+// --- WORKOUTS (28 DAYS GENERATOR) ---
+const generateMockWorkouts = (): Workout[] => {
+    return Array.from({ length: 28 }, (_, i) => {
+        const day = i + 1;
+        // Logic to vary content slightly
+        const isRest = day % 7 === 0; // Every 7th day could be different
+        const difficulty = day <= 7 ? 'Iniciante' : day <= 21 ? 'Intermediário' : 'Avançado';
+        
+        return {
+            id: `workout-${day}`,
+            day_number: day,
+            title: `Treino Dia ${day}`,
+            description: 'Foco em força e estabilidade.',
+            duration_minutes: 20 + (i % 10), // varies between 20-30 mins
+            difficulty: difficulty,
+            video_url: '',
+            thumbnail_url: `https://picsum.photos/seed/${100 + day}/800/600`,
+            is_locked: day > 3, // Unlock first 3 days
+            completed: false
+        };
+    });
+};
+
+const MOCK_WORKOUTS: Workout[] = generateMockWorkouts();
 
 interface AppState {
   currentScreen: AppScreen;
