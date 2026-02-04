@@ -49,18 +49,51 @@ export const Dashboard: React.FC = () => {
   const bmi = (currentWeight / (heightM * heightM)).toFixed(1);
   const bmiNum = Number(bmi);
 
+  // Expanded BMI Logic
   const getBMIInfo = (val: number) => {
-    if (val < 18.5) return { label: 'Abaixo', color: 'text-blue-500', bg: 'bg-blue-500', barPos: '15%' };
-    if (val < 24.9) return { label: 'Ideal', color: 'text-green-500', bg: 'bg-green-500', barPos: '40%' };
-    if (val < 29.9) return { label: 'Sobrepeso', color: 'text-yellow-500', bg: 'bg-yellow-500', barPos: '65%' };
-    return { label: 'Obeso', color: 'text-red-500', bg: 'bg-red-500', barPos: '90%' };
+    // Percentage for slider (Scale 15 to 40)
+    // 15 = 0%, 40 = 100%
+    const pct = Math.min(100, Math.max(0, ((val - 15) / (40 - 15)) * 100));
+
+    if (val < 18.5) return { 
+        label: 'Abaixo do Peso', 
+        color: 'text-blue-400', 
+        bg: 'bg-blue-500', 
+        desc: 'Necessário foco em ganho de massa magra e nutrição.',
+        pos: `${pct}%`
+    };
+    if (val < 24.9) return { 
+        label: 'Peso Saudável', 
+        color: 'text-green-500', 
+        bg: 'bg-green-500', 
+        desc: 'Excelente! Mantenha sua rotina de treinos e dieta.',
+        pos: `${pct}%`
+    };
+    if (val < 29.9) return { 
+        label: 'Sobrepeso', 
+        color: 'text-yellow-500', 
+        bg: 'bg-yellow-500', 
+        desc: 'Sinal de alerta. Aumente o cardio e controle calorias.',
+        pos: `${pct}%`
+    };
+    return { 
+        label: 'Obesidade', 
+        color: 'text-red-500', 
+        bg: 'bg-red-500', 
+        desc: 'Risco elevado à saúde. Busque acompanhamento profissional.',
+        pos: `${pct}%`
+    };
   };
   const bmiInfo = getBMIInfo(bmiNum);
+
+  // Weight Trend
+  const startWeight = user?.starting_weight_kg || currentWeight;
+  const totalLoss = startWeight - currentWeight;
 
   return (
     <div className="pb-24 animate-in fade-in duration-500 bg-[#0A0A0A] min-h-screen text-white font-sans selection:bg-brand-accent selection:text-white">
       
-      {/* --- HEADER: PREMIUM HUD --- */}
+      {/* --- HEADER --- */}
       <header className="p-6 pb-2 flex justify-between items-center sticky top-0 z-20 bg-[#0A0A0A]/80 backdrop-blur-md">
           <div className="flex items-center gap-3">
               <div 
@@ -84,8 +117,7 @@ export const Dashboard: React.FC = () => {
       <div className="p-6 space-y-8">
 
         {/* --- 1. GAMIFICATION SCOREBOARD --- */}
-        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#151515] to-[#050505] border border-white/5 p-6">
-             {/* Background Effects */}
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#151515] to-[#050505] border border-white/5 p-6 shadow-xl">
              <div className="absolute top-0 right-0 w-32 h-32 bg-brand-accent/10 blur-[50px] rounded-full pointer-events-none"></div>
              
              <div className="flex justify-between items-end mb-4">
@@ -102,7 +134,6 @@ export const Dashboard: React.FC = () => {
                  </div>
              </div>
 
-             {/* XP Progress Bar */}
              <div className="relative h-2 bg-[#222] rounded-full overflow-hidden">
                  <div 
                     className="absolute top-0 left-0 h-full bg-gradient-to-r from-orange-600 to-brand-accent transition-all duration-1000"
@@ -111,7 +142,6 @@ export const Dashboard: React.FC = () => {
                      <div className="absolute right-0 top-0 bottom-0 w-1 bg-white shadow-[0_0_10px_white]"></div>
                  </div>
              </div>
-             <p className="text-[10px] text-gray-500 mt-2 text-right">Próximo nível: {rank.next} XP</p>
         </section>
 
 
@@ -130,7 +160,6 @@ export const Dashboard: React.FC = () => {
                     <img src={nextWorkout.thumbnail_url} className="w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent"></div>
                     
-                    {/* Floating Badge */}
                     <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md border border-white/10 px-3 py-1 rounded-full text-xs font-bold text-white uppercase tracking-wider">
                         +{150} XP
                     </div>
@@ -157,67 +186,111 @@ export const Dashboard: React.FC = () => {
         </section>
 
 
-        {/* --- 3. HEALTH COMMAND CENTER (TECH STYLE) --- */}
-        <section className="bg-[#111] rounded-3xl p-1 border border-white/5">
-            <div className="bg-[#151515] rounded-[20px] p-5">
-                <div className="flex justify-between items-center mb-6 border-b border-white/5 pb-4">
-                    <h3 className="text-sm font-bold uppercase text-gray-400 tracking-widest">Métricas Corporais</h3>
-                    <button onClick={() => openModal('stats')} className="text-xs text-brand-accent hover:text-white transition-colors">ATUALIZAR DADOS</button>
+        {/* --- 3. HEALTH & BODY ANALYTICS (PREMIUM COCKPIT) --- */}
+        <section className="bg-[#111] rounded-3xl p-1 border border-white/5 shadow-2xl">
+            <div className="bg-[#151515] rounded-[20px] p-5 space-y-6">
+                
+                {/* Header */}
+                <div className="flex justify-between items-center border-b border-white/5 pb-4">
+                    <h3 className="text-sm font-bold uppercase text-gray-300 tracking-[0.2em] flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                        Métricas Corporais
+                    </h3>
+                    <button onClick={() => openModal('stats')} className="text-[10px] font-bold bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full text-brand-accent transition-colors border border-white/5">
+                        EDITAR
+                    </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-8 mb-6 relative">
-                    {/* Vertical Divider */}
-                    <div className="absolute left-1/2 top-0 bottom-0 w-[1px] bg-white/5 transform -translate-x-1/2"></div>
+                {/* 1. TOP ROW: The 3 Pillars (Height, Weight, Goal) */}
+                <div className="grid grid-cols-3 gap-3">
+                    {/* Height */}
+                    <div className="bg-[#0A0A0A] p-3 rounded-2xl border border-white/5 flex flex-col items-center justify-center relative group">
+                         <span className="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-1">Altura</span>
+                         <span className="text-lg font-bold text-white group-hover:text-brand-accent transition-colors">{user?.height_cm} <span className="text-xs text-gray-500 font-normal">cm</span></span>
+                    </div>
+                     {/* Current (Highlighted) */}
+                    <div className="bg-gradient-to-b from-[#222] to-[#111] p-3 rounded-2xl border border-brand-accent/30 flex flex-col items-center justify-center relative overflow-hidden shadow-[0_0_15px_rgba(255,85,0,0.1)]">
+                         <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-brand-accent/50 to-transparent"></div>
+                         <span className="text-[9px] text-brand-accent uppercase font-bold tracking-wider mb-1">Peso Atual</span>
+                         <span className="text-2xl font-black text-white tracking-tighter">{currentWeight} <span className="text-xs text-gray-500 font-normal">kg</span></span>
+                    </div>
+                     {/* Goal */}
+                    <div className="bg-[#0A0A0A] p-3 rounded-2xl border border-white/5 flex flex-col items-center justify-center relative group">
+                         <span className="text-[9px] text-gray-500 uppercase font-bold tracking-wider mb-1">Meta</span>
+                         <span className="text-lg font-bold text-gray-300 group-hover:text-green-400 transition-colors">{targetWeight} <span className="text-xs text-gray-500 font-normal">kg</span></span>
+                    </div>
+                </div>
 
-                    {/* Weight Display */}
-                    <div className="text-center">
-                        <span className="block text-[10px] text-gray-500 uppercase font-bold mb-1">Peso Atual</span>
-                        <div className="flex items-end justify-center gap-1">
-                            <span className="text-4xl font-black text-white tracking-tighter">{currentWeight}</span>
-                            <span className="text-sm text-gray-500 font-bold mb-1.5">kg</span>
-                        </div>
-                        <div className="mt-2 flex justify-center gap-2">
-                            <span className="text-[10px] text-gray-600">Meta: {targetWeight}</span>
-                        </div>
+                {/* 2. MIDDLE ROW: Trend Graph */}
+                <div className="bg-[#0A0A0A] rounded-2xl p-4 border border-white/5 relative">
+                    <div className="flex justify-between items-start mb-2">
+                        <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Evolução</span>
+                        {totalLoss > 0 ? (
+                            <span className="text-[10px] font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded border border-green-500/20">
+                                -{totalLoss.toFixed(1)} kg Total
+                            </span>
+                        ) : (
+                            <span className="text-[10px] font-bold text-gray-500 bg-white/5 px-2 py-0.5 rounded">
+                                Sem variação
+                            </span>
+                        )}
+                    </div>
+                    {/* The Chart Component */}
+                    <div className="w-full">
+                        <WeightChart data={user?.weight_history || []} />
+                    </div>
+                </div>
+
+                {/* 3. BOTTOM ROW: Advanced BMI Gauge */}
+                <div className="bg-[#0A0A0A] rounded-2xl p-4 border border-white/5">
+                    <div className="flex justify-between items-center mb-3">
+                         <div className="flex flex-col">
+                             <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Índice IMC</span>
+                             <span className={`text-xs font-bold ${bmiInfo.color}`}>{bmiInfo.label}</span>
+                         </div>
+                         <div className="bg-[#151515] border border-white/10 px-3 py-1 rounded-lg">
+                             <span className="text-xl font-black text-white">{bmi}</span>
+                         </div>
+                    </div>
+                    
+                    {/* Visual Bar */}
+                    <div className="relative h-3 w-full rounded-full flex overflow-hidden opacity-90">
+                        <div className="w-[14%] bg-blue-500/80 border-r border-black/20"></div> {/* < 18.5 */}
+                        <div className="w-[26%] bg-green-500/80 border-r border-black/20"></div> {/* 18.5 - 25 */}
+                        <div className="w-[20%] bg-yellow-500/80 border-r border-black/20"></div> {/* 25 - 30 */}
+                        <div className="w-[40%] bg-red-500/80"></div> {/* > 30 */}
                     </div>
 
-                    {/* BMI Display */}
-                    <div className="text-center">
-                        <span className="block text-[10px] text-gray-500 uppercase font-bold mb-1">IMC Calc</span>
-                        <div className="flex items-end justify-center gap-1">
-                            <span className="text-4xl font-black text-white tracking-tighter">{bmi}</span>
-                        </div>
-                        <div className={`mt-2 inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase ${bmiInfo.color} bg-white/5`}>
-                            {bmiInfo.label}
-                        </div>
+                    {/* Pointer */}
+                    <div className="relative w-full h-6 mb-1">
+                         <div 
+                            className="absolute top-0 -translate-x-1/2 flex flex-col items-center transition-all duration-1000 ease-out"
+                            style={{ left: bmiInfo.pos }}
+                         >
+                             <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-b-[8px] border-b-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.5)]"></div>
+                             <div className="bg-white text-black text-[8px] font-black uppercase px-1.5 py-0.5 rounded-sm mt-0.5 shadow-lg">
+                                 Você
+                             </div>
+                         </div>
+                    </div>
+
+                    {/* Labels */}
+                    <div className="flex justify-between text-[8px] text-gray-600 font-bold uppercase tracking-wide border-t border-white/5 pt-2 mt-1">
+                        <span>Abaixo</span>
+                        <span>Saudável</span>
+                        <span>Sobrepeso</span>
+                        <span>Obesidade</span>
+                    </div>
+                    
+                    {/* Risk Description */}
+                    <div className="mt-3 p-2 bg-white/5 rounded border border-white/5 flex gap-2 items-start">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400 mt-0.5 shrink-0"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                        <p className="text-[10px] text-gray-400 leading-tight">
+                            {bmiInfo.desc}
+                        </p>
                     </div>
                 </div>
 
-                {/* Visual Graph/Bar */}
-                <div className="relative h-32 w-full bg-[#0A0A0A] rounded-xl border border-white/5 overflow-hidden mb-4">
-                     <div className="absolute inset-0 opacity-50">
-                        {user?.weight_history && <WeightChart data={user.weight_history} />}
-                     </div>
-                </div>
-
-                {/* BMI Gauge Bar */}
-                <div className="relative h-2 w-full bg-[#222] rounded-full overflow-hidden mt-2">
-                     <div className="absolute left-[15%] w-[1px] h-full bg-[#0A0A0A] z-10"></div>
-                     <div className="absolute left-[40%] w-[1px] h-full bg-[#0A0A0A] z-10"></div>
-                     <div className="absolute left-[65%] w-[1px] h-full bg-[#0A0A0A] z-10"></div>
-                     
-                     <div className="flex h-full w-full">
-                         <div className="flex-1 bg-blue-900/50"></div>
-                         <div className="flex-[2] bg-green-900/50"></div>
-                         <div className="flex-[2] bg-yellow-900/50"></div>
-                         <div className="flex-[2] bg-red-900/50"></div>
-                     </div>
-                     {/* Indicator */}
-                     <div 
-                        className="absolute top-0 bottom-0 w-1.5 bg-white shadow-[0_0_10px_white] z-20"
-                        style={{ left: bmiInfo.barPos }}
-                     ></div>
-                </div>
             </div>
         </section>
 
@@ -228,16 +301,16 @@ export const Dashboard: React.FC = () => {
             {/* Water Quest */}
             <button 
                 onClick={() => openModal('water')}
-                className="group relative overflow-hidden bg-[#111] hover:bg-[#161616] border border-white/5 rounded-3xl p-5 flex flex-col justify-between h-40 transition-all"
+                className="group relative overflow-hidden bg-[#111] hover:bg-[#161616] border border-white/5 rounded-3xl p-5 flex flex-col justify-between h-40 transition-all active:scale-[0.98]"
             >
                 <div className="flex justify-between items-start z-10">
                     <div className="p-2 bg-blue-500/10 rounded-lg text-blue-500">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/></svg>
                     </div>
-                    <span className="text-[10px] font-bold text-gray-500 uppercase">+20 XP</span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase group-hover:text-blue-400 transition-colors">+20 XP</span>
                 </div>
                 
-                <div className="z-10">
+                <div className="z-10 text-left">
                     <span className="text-3xl font-black text-white">{waterIntakeL}<span className="text-lg text-gray-500">L</span></span>
                     <p className="text-xs text-gray-400 font-bold uppercase mt-1">Hidratação</p>
                 </div>
@@ -252,16 +325,16 @@ export const Dashboard: React.FC = () => {
             {/* Journal Quest */}
             <button 
                 onClick={() => openModal('journal')}
-                className="group bg-[#111] hover:bg-[#161616] border border-white/5 rounded-3xl p-5 flex flex-col justify-between h-40 transition-all"
+                className="group bg-[#111] hover:bg-[#161616] border border-white/5 rounded-3xl p-5 flex flex-col justify-between h-40 transition-all active:scale-[0.98]"
             >
                  <div className="flex justify-between items-start">
                     <div className="p-2 bg-purple-500/10 rounded-lg text-purple-500">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     </div>
-                    <span className="text-[10px] font-bold text-gray-500 uppercase">+30 XP</span>
+                    <span className="text-[10px] font-bold text-gray-500 uppercase group-hover:text-purple-400 transition-colors">+30 XP</span>
                 </div>
 
-                <div>
+                <div className="text-left">
                     <div className="w-8 h-8 rounded-full border-2 border-dashed border-gray-600 flex items-center justify-center mb-2 group-hover:border-white group-hover:bg-white group-hover:text-black transition-all">
                         <span className="text-lg font-bold">+</span>
                     </div>
@@ -269,15 +342,6 @@ export const Dashboard: React.FC = () => {
                 </div>
             </button>
         </div>
-
-
-        {/* --- 5. DAILY TIP (FOOTER) --- */}
-        {dailyTip && (
-            <div className="border-t border-white/5 pt-6 text-center">
-                 <span className="text-[10px] font-black uppercase text-brand-accent tracking-[0.2em] mb-2 block">{dailyTip.category}</span>
-                 <p className="text-sm font-medium text-gray-300 italic max-w-xs mx-auto">"{dailyTip.content}"</p>
-            </div>
-        )}
 
       </div>
 
