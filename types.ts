@@ -8,8 +8,9 @@ export interface UserProfile {
   target_weight_kg: number;
   height_cm: number;
   avatar_url?: string;
-  start_photo_url?: string;   // New
-  current_photo_url?: string; // New
+  start_photo_url?: string;
+  current_photo_url?: string;
+  progress_photos: { id: string; date: string; url: string; weight?: number }[]; // New field for timeline
   streak_days: number;
   is_premium: boolean;
   weight_history: { date: string; weight: number }[];
@@ -83,6 +84,7 @@ export enum AppScreen {
   RECIPES = 'RECIPES',
   WORKOUT_DETAILS = 'WORKOUT_DETAILS',
   MINDSET = 'MINDSET',
-  JOURNAL_HISTORY = 'JOURNAL_HISTORY', // New Screen
+  JOURNAL_HISTORY = 'JOURNAL_HISTORY',
+  TRANSFORMATION = 'TRANSFORMATION', // New Screen
   UPSELL = 'UPSELL'
 }

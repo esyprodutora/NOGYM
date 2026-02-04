@@ -7,6 +7,7 @@ import { WorkoutDetails } from './screens/WorkoutDetails';
 import { Profile } from './screens/Profile';
 import { Mindset } from './screens/Mindset';
 import { JournalHistory } from './screens/JournalHistory';
+import { Transformation } from './screens/Transformation';
 import { Upsell } from './screens/Upsell';
 import { Auth } from './screens/Auth';
 import { useAppStore } from './store/appStore';
@@ -37,6 +38,8 @@ function App() {
         return <Mindset />;
       case AppScreen.JOURNAL_HISTORY:
         return <JournalHistory />;
+      case AppScreen.TRANSFORMATION:
+        return <Transformation />;
       case AppScreen.UPSELL:
         return <Upsell />;
       default:

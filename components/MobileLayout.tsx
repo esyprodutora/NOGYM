@@ -69,6 +69,12 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
                 label="Mindset"
              />
              <SidebarItem 
+                active={currentScreen === AppScreen.TRANSFORMATION} 
+                onClick={() => setScreen(AppScreen.TRANSFORMATION)}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>}
+                label="Galeria"
+             />
+             <SidebarItem 
                 active={currentScreen === AppScreen.JOURNAL_HISTORY} 
                 onClick={() => setScreen(AppScreen.JOURNAL_HISTORY)}
                 icon={<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>}
@@ -136,16 +142,10 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
                 label="Receitas"
              />
              <NavButton 
-                active={currentScreen === AppScreen.MINDSET} 
-                onClick={() => setScreen(AppScreen.MINDSET)}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>}
-                label="Mindset"
-             />
-              <NavButton 
-                active={currentScreen === AppScreen.JOURNAL_HISTORY} 
-                onClick={() => setScreen(AppScreen.JOURNAL_HISTORY)}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>}
-                label="Diário"
+                active={currentScreen === AppScreen.TRANSFORMATION} 
+                onClick={() => setScreen(AppScreen.TRANSFORMATION)}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>}
+                label="Galeria"
              />
         </div>
 
