@@ -75,10 +75,10 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
                 label="Galeria"
              />
              <SidebarItem 
-                active={currentScreen === AppScreen.JOURNAL_HISTORY} 
-                onClick={() => setScreen(AppScreen.JOURNAL_HISTORY)}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>}
-                label="Diário"
+                active={currentScreen === AppScreen.WEEKLY_REPORT} 
+                onClick={() => setScreen(AppScreen.WEEKLY_REPORT)}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>}
+                label="Relatórios"
              />
              <div className="my-4 h-[1px] bg-gray-200 dark:bg-white/5 mx-2"></div>
               <SidebarItem 
@@ -136,16 +136,16 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
                 label="Treinos"
              />
              <NavButton 
+                active={currentScreen === AppScreen.WEEKLY_REPORT} 
+                onClick={() => setScreen(AppScreen.WEEKLY_REPORT)}
+                icon={<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>}
+                label="Relatórios"
+             />
+             <NavButton 
                 active={currentScreen === AppScreen.RECIPES} 
                 onClick={() => setScreen(AppScreen.RECIPES)}
                 icon={<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>}
                 label="Receitas"
-             />
-             <NavButton 
-                active={currentScreen === AppScreen.TRANSFORMATION} 
-                onClick={() => setScreen(AppScreen.TRANSFORMATION)}
-                icon={<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>}
-                label="Galeria"
              />
         </div>
 
