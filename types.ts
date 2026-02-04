@@ -46,6 +46,7 @@ export interface Recipe {
   category: RecipeCategory;
   ingredients: string[];
   instructions: string[];
+  tags?: string[]; // New field for dietary tags (Vegano, Sem Lactose, etc)
 }
 
 export interface DailyTip {
