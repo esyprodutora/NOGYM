@@ -1,3 +1,4 @@
+
 export interface UserProfile {
   id: string;
   email: string;
@@ -10,18 +11,19 @@ export interface UserProfile {
   avatar_url?: string;
   start_photo_url?: string;
   current_photo_url?: string;
-  progress_photos: { id: string; date: string; url: string; weight?: number }[]; // New field for timeline
+  progress_photos: { id: string; date: string; url: string; weight?: number }[];
   streak_days: number;
+  current_xp: number; // New Gamification Field
   is_premium: boolean;
   weight_history: { date: string; weight: number }[];
-  earned_badges: string[]; // IDs of earned badges
+  earned_badges: string[];
 }
 
 export interface Badge {
   id: string;
   title: string;
   description: string;
-  icon: string; // Emoji or icon name
+  icon: string;
   color: string;
 }
 
@@ -49,7 +51,7 @@ export interface Recipe {
   category: RecipeCategory;
   ingredients: string[];
   instructions: string[];
-  tags?: string[]; // New field for dietary tags (Vegano, Sem Lactose, etc)
+  tags?: string[];
 }
 
 export interface DailyTip {
@@ -77,8 +79,8 @@ export interface JournalEntry {
 }
 
 export enum AppScreen {
-  AUTH = 'AUTH',            // Start/Login Screen
-  PROFILE = 'PROFILE',      // Settings/Account
+  AUTH = 'AUTH',
+  PROFILE = 'PROFILE',
   DASHBOARD = 'DASHBOARD',
   PROGRAM = 'PROGRAM',
   RECIPES = 'RECIPES',
@@ -86,6 +88,6 @@ export enum AppScreen {
   MINDSET = 'MINDSET',
   JOURNAL_HISTORY = 'JOURNAL_HISTORY',
   TRANSFORMATION = 'TRANSFORMATION',
-  WEEKLY_REPORT = 'WEEKLY_REPORT', // New Screen
+  WEEKLY_REPORT = 'WEEKLY_REPORT',
   UPSELL = 'UPSELL'
 }
