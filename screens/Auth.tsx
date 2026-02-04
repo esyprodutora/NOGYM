@@ -34,13 +34,10 @@ export const Auth: React.FC = () => {
             
             const success = await register(email, password, fullName, phone);
             
-            // Se chegou aqui, não houve erro (register lançaria erro)
             if (success) {
-                // Se a tela não mudou, significa que precisa confirmar e-mail
                 const { currentScreen } = useAppStore.getState();
                 if (currentScreen === AppScreen.AUTH) {
                     setSuccessMsg("Conta criada com sucesso! Verifique seu e-mail para ativar a conta antes de entrar.");
-                    // Limpa formulário ou muda para login após delay
                     setTimeout(() => setView('login'), 5000);
                 }
             }
@@ -56,14 +53,21 @@ export const Auth: React.FC = () => {
             }
         }
     } catch (err: any) {
-        // Handle Supabase specific error messages for better UX
         const msg = err.message || "";
-        if (msg.includes('registered') || msg.includes('exists')) {
+        console.error("Auth UI Error:", msg);
+
+        // Tratamento específico para erro de conexão (chaves inválidas)
+        if (msg.includes('Failed to fetch') || msg.includes('Network request failed')) {
+             setErrorMsg("Erro de Conexão: O app não conseguiu conectar ao Supabase. Verifique se as chaves em 'services/supabase.ts' estão configuradas corretamente.");
+        } 
+        else if (msg.includes('registered') || msg.includes('exists')) {
              setErrorMsg("Este e-mail já está cadastrado. Tente fazer login.");
         } else if (msg.includes('rate limit')) {
              setErrorMsg("Muitas tentativas. Aguarde um pouco.");
         } else if (msg.includes('password')) {
              setErrorMsg("Senha muito fraca. Use pelo menos 6 caracteres.");
+        } else if (msg.includes('invalid login credentials')) {
+             setErrorMsg("E-mail ou senha incorretos.");
         } else {
              setErrorMsg(msg || "Ocorreu um erro. Tente novamente.");
         }
@@ -89,7 +93,6 @@ export const Auth: React.FC = () => {
 
         <div className="relative z-10 flex-1 flex flex-col p-8 overflow-y-auto no-scrollbar">
             <div className="mt-8 mb-auto">
-                 {/* Text Logo Only (Icon Removed) */}
                  <div className="flex items-center gap-3 mb-6">
                     <span className="text-3xl font-bold tracking-tighter text-brand-accent">NO <span className="text-white">Gym</span></span>
                 </div>
@@ -108,8 +111,14 @@ export const Auth: React.FC = () => {
 
             <div className="space-y-4 w-full mt-4">
                 {errorMsg && (
-                    <div className="bg-red-500/20 border border-red-500/50 p-3 rounded-xl text-red-200 text-sm text-center animate-in fade-in">
+                    <div className="bg-red-500/20 border border-red-500/50 p-4 rounded-xl text-red-200 text-sm animate-in fade-in">
+                        <p className="font-bold mb-1">Atenção</p>
                         {errorMsg}
+                        {errorMsg.includes('services/supabase.ts') && (
+                            <div className="mt-2 text-xs bg-black/20 p-2 rounded text-gray-300">
+                                Dica: Para testar sem backend, use um email contendo "test" (ex: test@nogym.com).
+                            </div>
+                        )}
                     </div>
                 )}
                 {successMsg && (
@@ -186,6 +195,18 @@ export const Auth: React.FC = () => {
                         </button>
                     )}
                 </div>
+
+                {/* Developer Hint */}
+                {view === 'login' && (
+                    <div className="text-center mt-6">
+                        <button 
+                            onClick={() => { setEmail('admin@nogym.com'); setPassword('123456'); }}
+                            className="text-[10px] text-white/20 hover:text-white/50 uppercase tracking-widest"
+                        >
+                            Usar Credenciais Demo
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     </div>
