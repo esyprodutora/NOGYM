@@ -45,8 +45,8 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
       <div className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-[#121212] z-50 transform transition-transform duration-300 ease-in-out border-r border-gray-200 dark:border-white/5 flex flex-col md:hidden ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
            <div className="p-6 border-b border-gray-100 dark:border-white/5 flex justify-between items-center">
              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center text-white font-bold text-lg">N</div>
-                <span className="text-xl font-bold tracking-tighter text-brand-accent">NO <span className="text-black dark:text-white">Gym</span></span>
+                <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center text-white font-bold text-lg">15</div>
+                <span className="text-xl font-bold tracking-tighter text-brand-accent">Seca <span className="text-black dark:text-white">em Casa</span></span>
              </div>
              <button onClick={() => setSidebarOpen(false)} className="text-gray-500 hover:text-brand-accent">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -55,7 +55,7 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
            
            <nav className="flex-1 overflow-y-auto p-4 space-y-1">
              <SidebarItem active={currentScreen === AppScreen.DASHBOARD} onClick={() => handleMobileNav(AppScreen.DASHBOARD)} icon={icons.dashboard} label="Painel" />
-             <SidebarItem active={currentScreen === AppScreen.PROGRAM} onClick={() => handleMobileNav(AppScreen.PROGRAM)} icon={icons.program} label="Seu Programa" />
+             <SidebarItem active={currentScreen === AppScreen.PROGRAM} onClick={() => handleMobileNav(AppScreen.PROGRAM)} icon={icons.program} label="Desafio 15 Dias" />
              <SidebarItem active={currentScreen === AppScreen.RECIPES} onClick={() => handleMobileNav(AppScreen.RECIPES)} icon={icons.recipes} label="Receitas & Nutrição" />
              <SidebarItem active={currentScreen === AppScreen.MINDSET} onClick={() => handleMobileNav(AppScreen.MINDSET)} icon={icons.mindset} label="Mindset" />
              <SidebarItem active={currentScreen === AppScreen.TRANSFORMATION} onClick={() => handleMobileNav(AppScreen.TRANSFORMATION)} icon={icons.gallery} label="Galeria" />
@@ -83,8 +83,8 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
       <aside className="hidden md:flex w-72 flex-col border-r border-gray-200 dark:border-white/5 bg-white dark:bg-[#121212] shrink-0 transition-colors">
         <div className="p-8 pb-4">
             <div className="flex items-center gap-2 mb-8">
-                <div className="w-10 h-10 bg-brand-accent rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-[0_0_15px_rgba(164,0,109,0.3)]">N</div>
-                <span className="text-2xl font-bold tracking-tighter text-brand-accent">NO <span className="text-black dark:text-white">Gym</span></span>
+                <div className="w-10 h-10 bg-brand-accent rounded-xl flex items-center justify-center text-white font-bold text-xl shadow-[0_0_15px_rgba(255,85,0,0.3)]">15</div>
+                <span className="text-2xl font-bold tracking-tighter text-brand-accent">Seca <span className="text-black dark:text-white">em Casa</span></span>
             </div>
             <div 
                 onClick={() => setScreen(AppScreen.PROFILE)}
@@ -102,7 +102,7 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
 
         <nav className="flex-1 px-4 space-y-1">
              <SidebarItem active={currentScreen === AppScreen.DASHBOARD} onClick={() => setScreen(AppScreen.DASHBOARD)} icon={icons.dashboard} label="Painel" />
-             <SidebarItem active={currentScreen === AppScreen.PROGRAM} onClick={() => setScreen(AppScreen.PROGRAM)} icon={icons.program} label="Seu Programa" />
+             <SidebarItem active={currentScreen === AppScreen.PROGRAM} onClick={() => setScreen(AppScreen.PROGRAM)} icon={icons.program} label="Desafio 15 Dias" />
              <SidebarItem active={currentScreen === AppScreen.RECIPES} onClick={() => setScreen(AppScreen.RECIPES)} icon={icons.recipes} label="Receitas & Nutrição" />
              <SidebarItem active={currentScreen === AppScreen.MINDSET} onClick={() => setScreen(AppScreen.MINDSET)} icon={icons.mindset} label="Mindset" />
              <SidebarItem active={currentScreen === AppScreen.TRANSFORMATION} onClick={() => setScreen(AppScreen.TRANSFORMATION)} icon={icons.gallery} label="Galeria" />
@@ -125,8 +125,8 @@ export const MobileLayout: React.FC<{ children: React.ReactNode }> = ({ children
         {/* MOBILE HEADER (md:hidden) */}
         <header className="md:hidden h-16 bg-white dark:bg-[#121212] border-b border-gray-200 dark:border-white/5 flex items-center justify-between px-4 shrink-0 z-30">
              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center text-white font-bold text-lg">N</div>
-                <span className="text-xl font-bold tracking-tighter text-brand-accent">NO <span className="text-black dark:text-white">Gym</span></span>
+                <div className="w-8 h-8 bg-brand-accent rounded-lg flex items-center justify-center text-white font-bold text-lg">15</div>
+                <span className="text-xl font-bold tracking-tighter text-brand-accent">Seca <span className="text-black dark:text-white">em Casa</span></span>
              </div>
              
              <button onClick={() => setSidebarOpen(true)} className="p-2 -mr-2 text-black dark:text-white hover:text-brand-accent transition-colors">

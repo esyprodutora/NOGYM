@@ -11,8 +11,8 @@ export const Program: React.FC = () => {
   return (
     <div className="pb-24 md:pb-8 animate-in fade-in duration-500">
       <div className="p-6 pt-8 md:p-0">
-        <h1 className="text-2xl font-bold text-black dark:text-white mb-2">Seu Programa</h1>
-        <p className="text-gray-500 dark:text-brand-muted text-sm mb-6">28 dias para transformar seu corpo e mente.</p>
+        <h1 className="text-2xl font-bold text-black dark:text-white mb-2">Desafio 15 Dias</h1>
+        <p className="text-gray-500 dark:text-brand-muted text-sm mb-6">Duas semanas intensas para transformar seu corpo.</p>
 
         {/* Progress Bar */}
         <div className="mb-8 bg-white dark:bg-brand-surface p-6 rounded-2xl border border-gray-100 dark:border-brand-border shadow-sm">

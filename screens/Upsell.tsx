@@ -34,17 +34,17 @@ export const Upsell: React.FC = () => {
         </div>
         
         <h1 className="text-4xl font-bold text-white mb-4 leading-tight">
-          Desbloqueie sua <span className="text-brand-accent">verdadeira força.</span>
+          Desbloqueie sua <span className="text-brand-accent">melhor versão.</span>
         </h1>
         
         <p className="text-brand-muted mb-8 leading-relaxed">
-          Junte-se a milhares de mulheres 30+ transformando seus corpos em casa. Sem equipamentos. Sem cultura de academia. Apenas resultados.
+          Junte-se a milhares de mulheres transformando seus corpos em casa com o Desafio 15 Dias. Sem equipamentos. Apenas resultados.
         </p>
 
         <div className="space-y-3 mb-8">
-            <FeatureRow text="Programa sistemático de 28 dias" />
+            <FeatureRow text="Programa completo de 15 dias" />
             <FeatureRow text="Acompanhamento avançado de progresso" />
-            <FeatureRow text="Receitas saudáveis e simples" />
+            <FeatureRow text="Receitas para secar e definir" />
             <FeatureRow text="Suporte prioritário da comunidade" />
         </div>
 
@@ -63,7 +63,7 @@ export const Upsell: React.FC = () => {
 const FeatureRow = ({ text }: { text: string }) => (
     <div className="flex items-center gap-3">
         <div className="w-5 h-5 rounded-full bg-brand-surface border border-brand-accent flex items-center justify-center shrink-0">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#A4006D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FF5500" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
         <span className="text-sm text-white/90">{text}</span>
     </div>

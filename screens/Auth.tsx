@@ -82,7 +82,7 @@ export const Auth: React.FC = () => {
         {/* Background Video/Image - Covers full screen on mobile, left half on desktop */}
         <div className="absolute inset-0 z-0 bg-brand-surface md:static md:flex-1 md:h-full">
              <img 
-                src="https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?q=80&w=1920&auto=format&fit=crop" 
+                src="https://images.unsplash.com/photo-1518310383802-640c2de311b2?q=80&w=1920&auto=format&fit=crop" 
                 className="w-full h-full object-cover opacity-60 md:opacity-80" 
                 alt="Background"
                 onError={(e) => {
@@ -94,11 +94,11 @@ export const Auth: React.FC = () => {
              {/* Desktop Logo Slogan */}
              <div className="hidden md:flex absolute inset-0 flex-col justify-between p-12 z-20 pointer-events-none">
                  <div className="flex items-center gap-3">
-                    <span className="text-4xl font-bold tracking-tighter text-brand-accent drop-shadow-lg">NO <span className="text-white">Gym</span></span>
+                    <span className="text-4xl font-bold tracking-tighter text-brand-accent drop-shadow-lg">Seca <span className="text-white">em Casa</span></span>
                  </div>
                  <div className="max-w-xl">
-                     <h2 className="text-5xl font-bold text-white mb-4 leading-tight">Sua academia é onde você está.</h2>
-                     <p className="text-xl text-gray-200">Resultados reais, sem equipamentos, sem julgamentos.</p>
+                     <h2 className="text-5xl font-bold text-white mb-4 leading-tight">Transforme seu corpo em 15 dias.</h2>
+                     <p className="text-xl text-gray-200">Desafio intenso, resultados reais, sem equipamentos.</p>
                  </div>
              </div>
         </div>
@@ -108,17 +108,17 @@ export const Auth: React.FC = () => {
             <div className="mt-8 mb-auto md:mt-0 md:mb-0">
                  {/* Mobile Logo */}
                  <div className="md:hidden flex items-center gap-3 mb-6">
-                    <span className="text-3xl font-bold tracking-tighter text-brand-accent">NO <span className="text-white">Gym</span></span>
+                    <span className="text-3xl font-bold tracking-tighter text-brand-accent">Seca <span className="text-white">em Casa</span></span>
                 </div>
                 
                 <h1 className="text-4xl font-bold text-white leading-tight mb-2">
                     {view === 'login' && "Bem-vinda de volta."}
-                    {view === 'register' && "Sua jornada começa agora."}
+                    {view === 'register' && "Aceite o Desafio."}
                     {view === 'forgot_password' && "Recupere seu acesso."}
                 </h1>
                 <p className="text-gray-300 mb-8">
-                    {view === 'login' && "Entre para continuar sua evolução."}
-                    {view === 'register' && "Treinos rápidos, resultados reais. Sem academia."}
+                    {view === 'login' && "Entre para continuar sua evolução de 15 dias."}
+                    {view === 'register' && "Comece agora sua jornada de 15 dias para secar."}
                     {view === 'forgot_password' && "Insira seu e-mail para redefinir a senha."}
                 </p>
 

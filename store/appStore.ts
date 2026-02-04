@@ -4,25 +4,20 @@ import { AppScreen, UserProfile, Workout, Recipe, DailyTip, Badge, MindsetItem, 
 
 // --- CONSTANTS ---
 const BADGES: Badge[] = [
-  // Fase 1: Início Rápido
-  { id: 'start', title: 'O Início', description: 'Criou sua conta e começou', icon: '🚀', color: 'bg-blue-500' },
-  { id: 'first_workout', title: 'Primeiro Suor', description: 'Concluiu o treino do Dia 1', icon: '💦', color: 'bg-indigo-500' },
+  // Fase 1: Início
+  { id: 'start', title: 'A Decisão', description: 'Você aceitou o desafio!', icon: '🔥', color: 'bg-orange-500' },
+  { id: 'first_workout', title: 'Primeiro Passo', description: 'Concluiu o treino do Dia 1', icon: '💦', color: 'bg-red-500' },
   { id: 'mindset_1', title: 'Mente Blindada', description: 'Assistiu à primeira aula de Mindset', icon: '🧠', color: 'bg-purple-500' },
   
-  // Fase 2: Consistência (Médio)
-  { id: 'week_1', title: 'Semana 1', description: 'Concluiu 7 dias do programa', icon: '🔥', color: 'bg-orange-500' },
+  // Fase 2: Consistência (Meio do Desafio)
+  { id: 'week_1', title: 'Metade do Caminho', description: 'Concluiu 7 dias do desafio', icon: '⚡', color: 'bg-yellow-500' },
   { id: 'loss_1', title: 'Primeiro Quilo', description: 'Perdeu 1kg na balança', icon: '⚖️', color: 'bg-cyan-500' },
   { id: 'hydration_streak', title: 'Hidratada', description: 'Registrou água por 3 dias seguidos', icon: '💧', color: 'bg-blue-400' },
-  { id: 'journal_3', title: 'Diário Pessoal', description: 'Fez 3 registros no diário', icon: '📓', color: 'bg-pink-400' },
-
-  // Fase 3: Resultados (Difícil)
-  { id: 'loss_5', title: 'Imparável', description: 'Eliminou 5kg totais', icon: '⚡', color: 'bg-yellow-500' },
-  { id: 'halfway', title: 'Metade do Caminho', description: 'Chegou no dia 14 do programa', icon: '🚩', color: 'bg-green-500' },
-  { id: 'social', title: 'Influenciadora', description: 'Salvou 5 fotos na galeria', icon: '📸', color: 'bg-rose-500' },
-
-  // Fase 4: Elite (Hard)
-  { id: 'loss_10', title: 'Nova Mulher', description: 'Eliminou 10kg! Incrível!', icon: '💎', color: 'bg-fuchsia-500' },
-  { id: 'program_done', title: 'Graduada', description: 'Concluiu os 28 dias do programa', icon: '🏆', color: 'bg-brand-accent' },
+  
+  // Fase 3: Conclusão
+  { id: 'loss_3', title: 'Focada', description: 'Eliminou 3kg totais', icon: '💎', color: 'bg-fuchsia-500' },
+  { id: 'social', title: 'Inspiradora', description: 'Salvou 5 fotos na galeria', icon: '📸', color: 'bg-pink-500' },
+  { id: 'program_done', title: 'Vencedora do Desafio', description: 'Concluiu os 15 dias do programa Seca em Casa!', icon: '🏆', color: 'bg-brand-accent' },
 ];
 
 const DAILY_TIPS: DailyTip[] = [
@@ -74,17 +69,17 @@ const MOCK_MINDSET: MindsetItem[] = [
     },
 ];
 
-// --- WORKOUTS (28 DAYS GENERATOR) ---
+// --- WORKOUTS (15 DAYS GENERATOR) ---
 const generateMockWorkouts = (): Workout[] => {
-    return Array.from({ length: 28 }, (_, i) => {
+    return Array.from({ length: 15 }, (_, i) => {
         const day = i + 1;
-        const difficulty = day <= 7 ? 'Iniciante' : day <= 21 ? 'Intermediário' : 'Avançado';
+        const difficulty = day <= 5 ? 'Iniciante' : day <= 10 ? 'Intermediário' : 'Avançado';
         return {
             id: `workout-${day}`,
             day_number: day,
             title: `Treino Dia ${day}`,
-            description: 'Foco em força e estabilidade.',
-            duration_minutes: 20 + (i % 10), 
+            description: 'Foco em queima de gordura e definição.',
+            duration_minutes: 20 + (i % 5), 
             difficulty: difficulty,
             video_url: '',
             thumbnail_url: `https://picsum.photos/seed/${100 + day}/800/600`,

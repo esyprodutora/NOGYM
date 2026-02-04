@@ -47,8 +47,8 @@ export const WeightChart: React.FC<{ data: DataPoint[] }> = ({ data }) => {
       >
         <defs>
           <linearGradient id="chartGradient" x1="0" x2="0" y1="0" y2="1">
-            <stop offset="0%" stopColor="#A4006D" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#A4006D" stopOpacity="0" />
+            <stop offset="0%" stopColor="#FF5500" stopOpacity="0.4" />
+            <stop offset="100%" stopColor="#FF5500" stopOpacity="0" />
           </linearGradient>
         </defs>
         
@@ -62,12 +62,12 @@ export const WeightChart: React.FC<{ data: DataPoint[] }> = ({ data }) => {
         <path d={areaPath} fill="url(#chartGradient)" />
 
         {/* Line */}
-        <path d={pathData} fill="none" stroke="#A4006D" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+        <path d={pathData} fill="none" stroke="#FF5500" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
 
         {/* Points & Labels */}
         {points.map((p, i) => (
           <g key={i}>
-            <circle cx={p.x} cy={p.y} r="1.5" fill="#121212" stroke="#A4006D" strokeWidth="0.5" />
+            <circle cx={p.x} cy={p.y} r="1.5" fill="#121212" stroke="#FF5500" strokeWidth="0.5" />
             
             {/* Show Weight Labels occasionally to avoid clutter */}
             {(i === 0 || i === points.length - 1 || i === Math.floor(points.length/2)) && (
