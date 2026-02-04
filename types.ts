@@ -61,8 +61,11 @@ export interface DailyTip {
 export interface MindsetItem {
   id: string;
   title: string;
+  description: string;
   duration: string;
-  type: 'Áudio' | 'Leitura' | 'Vídeo';
+  type: 'Vídeo';
+  video_url: string;
+  thumbnail_url: string;
   completed: boolean;
 }
 

@@ -18,10 +18,46 @@ const DAILY_TIPS: DailyTip[] = [
 ];
 
 const MOCK_MINDSET: MindsetItem[] = [
-    { id: 'm1', title: "Visualizando Seu Sucesso", duration: "5 min", type: "Áudio", completed: false },
-    { id: 'm2', title: "Superando a Ansiedade do Platô", duration: "8 min", type: "Áudio", completed: false },
-    { id: 'm3', title: "A Disciplina do Descanso", duration: "3 min", type: "Leitura", completed: false },
-    { id: 'm4', title: "Por que não precisamos de academias", duration: "10 min", type: "Áudio", completed: false },
+    { 
+        id: 'm1', 
+        title: "Mindset de Sucesso", 
+        description: "Aprenda a configurar sua mente para vencer os obstáculos diários e manter o foco no longo prazo.",
+        duration: "10 min", 
+        type: "Vídeo", 
+        completed: false,
+        video_url: "", // COLE O LINK DO YOUTUBE AQUI
+        thumbnail_url: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=800"
+    },
+    { 
+        id: 'm2', 
+        title: "Superando a Ansiedade", 
+        description: "Técnicas práticas para reduzir a ansiedade e evitar que o estresse atrapalhe seu progresso físico.",
+        duration: "12 min", 
+        type: "Vídeo", 
+        completed: false,
+        video_url: "", // COLE O LINK DO YOUTUBE AQUI
+        thumbnail_url: "https://images.unsplash.com/photo-1499209974431-276138d71626?q=80&w=800"
+    },
+    { 
+        id: 'm3', 
+        title: "A Disciplina do Descanso", 
+        description: "Por que dormir e descansar é tão importante quanto treinar para a queima de gordura.",
+        duration: "8 min", 
+        type: "Vídeo", 
+        completed: false,
+        video_url: "", // COLE O LINK DO YOUTUBE AQUI
+        thumbnail_url: "https://images.unsplash.com/photo-1511295742362-92c96b50484a?q=80&w=800"
+    },
+    { 
+        id: 'm4', 
+        title: "Por que não precisamos de academia?", 
+        description: "Entenda a ciência por trás do treino com peso do corpo e como ter resultados superiores em casa.",
+        duration: "15 min", 
+        type: "Vídeo", 
+        completed: false,
+        video_url: "", // COLE O LINK DO YOUTUBE AQUI
+        thumbnail_url: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=800"
+    },
 ];
 
 // --- RECIPE GENERATOR ---
