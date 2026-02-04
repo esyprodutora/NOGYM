@@ -25,7 +25,6 @@ const MOCK_MINDSET: MindsetItem[] = [
 ];
 
 // --- RECIPE GENERATOR ---
-// Generating 20 recipes per category to satisfy the "large list" requirement without hardcoding 1000 lines.
 const generateRecipes = (): Recipe[] => {
     const categories: { cat: RecipeCategory; baseImg: string; templates: any[] }[] = [
         { 
@@ -113,9 +112,8 @@ const generateRecipes = (): Recipe[] => {
     const allRecipes: Recipe[] = [];
     let idCounter = 1;
 
-    // Expand templates to reach ~20 per category (doubling them with slight variations to hit volume req)
+    // Expand templates to reach ~20 per category
     categories.forEach(cat => {
-        // Add original templates
         cat.templates.forEach(t => {
             allRecipes.push({
                 id: `rec-${idCounter++}`,
@@ -129,8 +127,6 @@ const generateRecipes = (): Recipe[] => {
                 tags: t.tags
             });
         });
-
-        // Generate variation 2 (Slightly different) to double the count
         cat.templates.forEach(t => {
             allRecipes.push({
                 id: `rec-${idCounter++}`,
@@ -151,18 +147,39 @@ const generateRecipes = (): Recipe[] => {
 
 const MOCK_RECIPES = generateRecipes();
 
-const MOCK_WORKOUTS: Workout[] = Array.from({ length: 28 }, (_, i) => ({
-  id: `workout-${i + 1}`,
-  day_number: i + 1,
-  title: `Treino Dia ${i + 1}`,
-  description: 'Foco em força e estabilidade.',
-  duration_minutes: 20 + (i % 10),
-  difficulty: i < 7 ? 'Iniciante' : 'Intermediário',
-  video_url: '#',
-  thumbnail_url: `https://picsum.photos/seed/${i + 100}/800/600`,
-  is_locked: i > 2, 
-  completed: false,
-}));
+// --- WORKOUTS (28 DAYS) ---
+// IMPORTANT: Paste your YouTube Links in the 'video_url' field below.
+// Example: video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
+const MOCK_WORKOUTS: Workout[] = [
+    { id: 'workout-1',  day_number: 1,  title: 'Treino Dia 1',  description: 'Foco em força e estabilidade.', duration_minutes: 20, difficulty: 'Iniciante', is_locked: false, completed: false, thumbnail_url: 'https://picsum.photos/seed/101/800/600', video_url: '' },
+    { id: 'workout-2',  day_number: 2,  title: 'Treino Dia 2',  description: 'Foco em força e estabilidade.', duration_minutes: 21, difficulty: 'Iniciante', is_locked: false, completed: false, thumbnail_url: 'https://picsum.photos/seed/102/800/600', video_url: '' },
+    { id: 'workout-3',  day_number: 3,  title: 'Treino Dia 3',  description: 'Foco em força e estabilidade.', duration_minutes: 22, difficulty: 'Iniciante', is_locked: false, completed: false, thumbnail_url: 'https://picsum.photos/seed/103/800/600', video_url: '' },
+    { id: 'workout-4',  day_number: 4,  title: 'Treino Dia 4',  description: 'Foco em força e estabilidade.', duration_minutes: 23, difficulty: 'Iniciante', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/104/800/600', video_url: '' },
+    { id: 'workout-5',  day_number: 5,  title: 'Treino Dia 5',  description: 'Foco em força e estabilidade.', duration_minutes: 24, difficulty: 'Iniciante', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/105/800/600', video_url: '' },
+    { id: 'workout-6',  day_number: 6,  title: 'Treino Dia 6',  description: 'Foco em força e estabilidade.', duration_minutes: 25, difficulty: 'Iniciante', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/106/800/600', video_url: '' },
+    { id: 'workout-7',  day_number: 7,  title: 'Treino Dia 7',  description: 'Foco em força e estabilidade.', duration_minutes: 26, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/107/800/600', video_url: '' },
+    { id: 'workout-8',  day_number: 8,  title: 'Treino Dia 8',  description: 'Foco em força e estabilidade.', duration_minutes: 27, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/108/800/600', video_url: '' },
+    { id: 'workout-9',  day_number: 9,  title: 'Treino Dia 9',  description: 'Foco em força e estabilidade.', duration_minutes: 28, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/109/800/600', video_url: '' },
+    { id: 'workout-10', day_number: 10, title: 'Treino Dia 10', description: 'Foco em força e estabilidade.', duration_minutes: 29, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/110/800/600', video_url: '' },
+    { id: 'workout-11', day_number: 11, title: 'Treino Dia 11', description: 'Foco em força e estabilidade.', duration_minutes: 20, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/111/800/600', video_url: '' },
+    { id: 'workout-12', day_number: 12, title: 'Treino Dia 12', description: 'Foco em força e estabilidade.', duration_minutes: 21, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/112/800/600', video_url: '' },
+    { id: 'workout-13', day_number: 13, title: 'Treino Dia 13', description: 'Foco em força e estabilidade.', duration_minutes: 22, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/113/800/600', video_url: '' },
+    { id: 'workout-14', day_number: 14, title: 'Treino Dia 14', description: 'Foco em força e estabilidade.', duration_minutes: 23, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/114/800/600', video_url: '' },
+    { id: 'workout-15', day_number: 15, title: 'Treino Dia 15', description: 'Foco em força e estabilidade.', duration_minutes: 24, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/115/800/600', video_url: '' },
+    { id: 'workout-16', day_number: 16, title: 'Treino Dia 16', description: 'Foco em força e estabilidade.', duration_minutes: 25, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/116/800/600', video_url: '' },
+    { id: 'workout-17', day_number: 17, title: 'Treino Dia 17', description: 'Foco em força e estabilidade.', duration_minutes: 26, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/117/800/600', video_url: '' },
+    { id: 'workout-18', day_number: 18, title: 'Treino Dia 18', description: 'Foco em força e estabilidade.', duration_minutes: 27, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/118/800/600', video_url: '' },
+    { id: 'workout-19', day_number: 19, title: 'Treino Dia 19', description: 'Foco em força e estabilidade.', duration_minutes: 28, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/119/800/600', video_url: '' },
+    { id: 'workout-20', day_number: 20, title: 'Treino Dia 20', description: 'Foco em força e estabilidade.', duration_minutes: 29, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/120/800/600', video_url: '' },
+    { id: 'workout-21', day_number: 21, title: 'Treino Dia 21', description: 'Foco em força e estabilidade.', duration_minutes: 20, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/121/800/600', video_url: '' },
+    { id: 'workout-22', day_number: 22, title: 'Treino Dia 22', description: 'Foco em força e estabilidade.', duration_minutes: 21, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/122/800/600', video_url: '' },
+    { id: 'workout-23', day_number: 23, title: 'Treino Dia 23', description: 'Foco em força e estabilidade.', duration_minutes: 22, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/123/800/600', video_url: '' },
+    { id: 'workout-24', day_number: 24, title: 'Treino Dia 24', description: 'Foco em força e estabilidade.', duration_minutes: 23, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/124/800/600', video_url: '' },
+    { id: 'workout-25', day_number: 25, title: 'Treino Dia 25', description: 'Foco em força e estabilidade.', duration_minutes: 24, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/125/800/600', video_url: '' },
+    { id: 'workout-26', day_number: 26, title: 'Treino Dia 26', description: 'Foco em força e estabilidade.', duration_minutes: 25, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/126/800/600', video_url: '' },
+    { id: 'workout-27', day_number: 27, title: 'Treino Dia 27', description: 'Foco em força e estabilidade.', duration_minutes: 26, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/127/800/600', video_url: '' },
+    { id: 'workout-28', day_number: 28, title: 'Treino Dia 28', description: 'Foco em força e estabilidade.', duration_minutes: 27, difficulty: 'Intermediário', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/128/800/600', video_url: '' },
+];
 
 interface AppState {
   currentScreen: AppScreen;
@@ -195,7 +212,7 @@ interface AppState {
   logWater: (amountL: number) => Promise<void>;
   logJournal: (text: string) => Promise<void>;
   updateProfileStats: (height: number, targetWeight: number, currentWeight: number) => Promise<void>;
-  updateAvatar: (url: string) => Promise<void>; // NEW ACTION
+  updateAvatar: (url: string) => Promise<void>;
   clearNewBadge: () => void;
 }
 
