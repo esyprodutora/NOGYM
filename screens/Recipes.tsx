@@ -130,7 +130,7 @@ export const Recipes: React.FC = () => {
                                             {ing}
                                         </li>
                                     )) || <p className="text-brand-muted text-sm">Ingredientes não listados.</p>}
-                                ul>
+                                </ul>
                             </div>
                       </div>
 
