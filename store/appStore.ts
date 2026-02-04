@@ -45,27 +45,6 @@ const MOCK_WORKOUTS: Workout[] = Array.from({ length: 28 }, (_, i) => ({
   completed: false,
 }));
 
-// DEMO USER DATA for Fallback
-const DEMO_USER: UserProfile = {
-  id: 'demo-user-123',
-  email: 'admin@nogym.com',
-  full_name: 'Usuário Demo',
-  phone: '11999999999',
-  current_weight_kg: 68.5,
-  starting_weight_kg: 72.0,
-  target_weight_kg: 60.0,
-  height_cm: 165,
-  streak_days: 12,
-  is_premium: true,
-  weight_history: [
-      { date: '01 Out', weight: 72.0 },
-      { date: '15 Out', weight: 70.5 },
-      { date: '01 Nov', weight: 69.2 },
-      { date: 'Hoje', weight: 68.5 }
-  ],
-  earned_badges: ['start', 'loss_1']
-};
-
 interface AppState {
   currentScreen: AppScreen;
   user: UserProfile | null;
@@ -130,9 +109,6 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   fetchUserData: async (userId: string) => {
-      // Demo Check
-      if (userId === DEMO_USER.id) return;
-
       try {
           // 1. Fetch Profile
           let { data: profile, error } = await supabase
@@ -142,8 +118,7 @@ export const useAppStore = create<AppState>((set, get) => ({
             .single();
           
           if (error || !profile) {
-              console.warn("Perfil não encontrado. Tentando criar automaticamente (Self-Healing)...");
-              // Tenta buscar dados do Auth User para preencher o perfil
+              // Self-healing for missing profiles (common during dev)
               const { data: { user } } = await supabase.auth.getUser();
               if (user) {
                    const { data: newProfile, error: insertError } = await supabase.from('profiles').insert({
@@ -158,7 +133,6 @@ export const useAppStore = create<AppState>((set, get) => ({
                    if (!insertError && newProfile) {
                        profile = newProfile;
                    } else {
-                       console.error("Falha ao criar perfil automaticamente:", insertError);
                        return;
                    }
               } else {
@@ -234,16 +208,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   login: async (email, password) => {
-    // 1. Force Demo Mode
-    if (email === 'admin@nogym.com' && password === '123456') {
-        set({ user: DEMO_USER, currentScreen: AppScreen.DASHBOARD });
-        return true;
-    }
-
     try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         
-        if (error) throw error; // Lança erro para ser pego pela UI
+        if (error) throw error;
 
         if (data.user) {
             await get().fetchUserData(data.user.id);
@@ -252,21 +220,12 @@ export const useAppStore = create<AppState>((set, get) => ({
         }
     } catch (e: any) {
         console.error("Login Error:", e.message);
-        throw e; // Propaga erro para a tela Auth
+        throw e;
     }
     return false;
   },
 
   register: async (email, password, fullName, phone) => {
-    // Demo Fallback
-    if (email.includes('test')) {
-         set({ 
-            user: { ...DEMO_USER, email, full_name: fullName },
-            currentScreen: AppScreen.DASHBOARD 
-        });
-        return true;
-    }
-
     try {
         const { data, error } = await supabase.auth.signUp({
             email,
@@ -282,9 +241,8 @@ export const useAppStore = create<AppState>((set, get) => ({
         if (error) throw error;
 
         if (data.user) {
-            // Se o login automático ocorrer (email confirmation off)
             if (data.session) {
-                // Tenta inserir o perfil manualmente se a trigger falhar ou demorar
+                // Ensure profile exists
                 await supabase.from('profiles').insert({
                     id: data.user.id,
                     email: email,
@@ -298,8 +256,6 @@ export const useAppStore = create<AppState>((set, get) => ({
                 set({ currentScreen: AppScreen.DASHBOARD });
                 return true;
             } else {
-                // Caso exija confirmação de e-mail, RETORNA TRUE mas não muda a tela
-                // A UI deve avisar o usuário
                 return true; 
             }
         }
@@ -339,8 +295,6 @@ export const useAppStore = create<AppState>((set, get) => ({
         workouts: workouts.map(w => w.id === id ? { ...w, completed: !w.completed } : w)
     });
 
-    if (user.id === DEMO_USER.id) return; 
-
     const workout = workouts.find(w => w.id === id);
     if (!workout) return;
 
@@ -362,8 +316,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({
           mindsetItems: mindsetItems.map(m => m.id === id ? { ...m, completed: !m.completed } : m)
       });
-
-      if (user.id === DEMO_USER.id) return;
 
       const item = mindsetItems.find(i => i.id === id);
       if(!item) return;
@@ -395,8 +347,6 @@ export const useAppStore = create<AppState>((set, get) => ({
           } : null
       }));
 
-      if (user.id === DEMO_USER.id) return;
-
       try {
         await supabase.from('weight_logs').insert({ user_id: user.id, weight_kg: newWeight });
         await supabase.from('profiles').update({ current_weight_kg: newWeight }).eq('id', user.id);
@@ -409,7 +359,6 @@ export const useAppStore = create<AppState>((set, get) => ({
 
       set({ waterIntakeL: Number((waterIntakeL + amountL).toFixed(1)) });
 
-      if (user.id === DEMO_USER.id) return;
       try {
           await supabase.from('water_logs').insert({ user_id: user.id, amount_ml: amountL * 1000 });
       } catch(e) {}
@@ -426,7 +375,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       };
       set({ journal: [newEntry, ...journal] });
 
-      if (user.id === DEMO_USER.id) return;
       try {
           await supabase.from('journal_entries').insert({ user_id: user.id, content: text });
       } catch(e) {}
@@ -445,7 +393,6 @@ export const useAppStore = create<AppState>((set, get) => ({
           } : null
       }));
 
-      if (user.id === DEMO_USER.id) return;
       try {
           await supabase.from('profiles').update({
               height_cm: height,
