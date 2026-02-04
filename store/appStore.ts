@@ -832,13 +832,13 @@ function generateRecipesFull(): Recipe[] {
             const template = baseList[i % baseList.length];
             const modifier = modifiers[i % modifiers.length]; // Cycle modifiers sequentially
             
-            // Image Logic (Placeholders by Category)
+            // Image Logic (Fixed to match category cards exactly)
             let img = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800'; 
             if(category === 'Café da Manhã') img = 'https://images.unsplash.com/photo-1493770348161-369560ae357d?q=80&w=800';
             if(category === 'Almoço') img = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800';
-            if(category === 'Jantar') img = 'https://images.unsplash.com/photo-1467003909585-2f8a7270028d?q=80&w=800';
+            if(category === 'Jantar') img = 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800'; // Updated to match card
             if(category === 'Lanche') img = 'https://images.unsplash.com/photo-1506459225024-1428097a7e18?q=80&w=800';
-            if(category === 'Bebidas') img = 'https://images.unsplash.com/photo-1544145945-f90425340c7e?q=80&w=800';
+            if(category === 'Bebidas') img = 'https://images.unsplash.com/photo-1610970881699-44a5587cabec?q=80&w=800'; // Updated to match card
 
             // Create Recipe Object
             result.push({
