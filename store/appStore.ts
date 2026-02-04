@@ -384,46 +384,443 @@ function generateRecipesFull(): Recipe[] {
     let allRecipes: Recipe[] = [];
     let idCounter = 1;
 
-    const modifiers = ['Delicioso', 'Rápido', 'Nutritivo', 'Fit', 'Especial', 'da Casa', 'Supremo', 'Leve', 'Energético', 'Funcional'];
+    // Modifiers to create variations without losing core quality
+    const modifiers = ['Clássico', 'Especial', 'da Casa', 'Supremo', 'Rústico', 'Premium'];
     
-    // TEMPLATES
-    // BREAKFAST
+    // --- TEMPLATES COMPLETOS E DETALHADOS ---
+
+    // CAFÉ DA MANHÃ
     const breakfastTemplates = [
-        { t: 'Panqueca de Banana', cal: 280, tags: ['Vegetariano', 'Sem Glúten'], baseIng: ['1 banana prata', '2 ovos', '2 colheres de aveia'], baseInst: ['Amasse a banana', 'Misture com ovos e aveia', 'Grelhe em frigideira untada'] },
-        { t: 'Ovos Mexidos Cremosos', cal: 220, tags: ['Low Carb', 'Sem Glúten', 'Proteico'], baseIng: ['2 ovos', '1 colher de requeijão light', 'Cebolinha'], baseInst: ['Bata os ovos com sal', 'Mexa na frigideira em fogo baixo', 'Adicione requeijão no final'] },
-        { t: 'Mingau de Aveia', cal: 300, tags: ['Vegano', 'Fibras'], baseIng: ['3 colheres de aveia', '200ml de leite vegetal', 'Canela'], baseInst: ['Cozinhe a aveia com leite', 'Mexa até engrossar', 'Polvilhe canela'] },
-        { t: 'Tostada de Abacate', cal: 250, tags: ['Vegetariano'], baseIng: ['1 fatia pão integral', '1/4 abacate', '1 ovo cozido'], baseInst: ['Toste o pão', 'Amasse o abacate e tempere', 'Coloque o ovo fatiado por cima'] },
-        { t: 'Smoothie Bowl Vermelho', cal: 200, tags: ['Vegano', 'Sem Lactose'], baseIng: ['1 xícara frutas vermelhas', '1 banana congelada', '50ml água'], baseInst: ['Bata tudo no liquidificador até ficar cremoso', 'Sirva com granola'] },
-        { t: 'Crepioca Recheada', cal: 260, tags: ['Sem Glúten', 'Prático'], baseIng: ['1 ovo', '2 colheres goma de tapioca', 'Queijo cotage'], baseInst: ['Misture ovo e goma', 'Faça o disco na frigideira', 'Recheie com queijo'] }
+        { 
+            t: 'Panqueca de Banana Funcional', 
+            cal: 280, 
+            tags: ['Vegetariano', 'Sem Glúten', 'Pré-Treino'], 
+            baseIng: [
+                '1 banana prata bem madura (amassada)', 
+                '2 ovos médios', 
+                '2 colheres (sopa) de farelo de aveia', 
+                '1 colher (chá) de canela em pó',
+                'Óleo de coco para untar'
+            ], 
+            baseInst: [
+                '1. Em um bowl, amasse bem a banana com um garfo até virar um purê.',
+                '2. Adicione os ovos e bata vigorosamente com um garfo ou fouet até aerar.',
+                '3. Incorpore a aveia e a canela, misturando até obter uma massa homogênea.',
+                '4. Aqueça uma frigideira antiaderente em fogo baixo e unte levemente com óleo de coco.',
+                '5. Despeje pequenas porções da massa. Quando surgirem bolhas na superfície, vire com cuidado.',
+                '6. Deixe dourar o outro lado por cerca de 1 minuto e sirva quente.'
+            ] 
+        },
+        { 
+            t: 'Ovos Mexidos Cremosos de Hotel', 
+            cal: 240, 
+            tags: ['Low Carb', 'Sem Glúten', 'Proteico'], 
+            baseIng: [
+                '3 ovos grandes', 
+                '1 colher (sopa) de requeijão light ou creme de ricota', 
+                '1 colher (chá) de manteiga ghee',
+                'Sal e pimenta do reino a gosto',
+                'Cebolinha fresca picada para finalizar'
+            ], 
+            baseInst: [
+                '1. Quebre os ovos em uma tigela e bata levemente com um garfo, apenas para misturar as gemas e claras.',
+                '2. Tempere com uma pitada de sal e pimenta.',
+                '3. Aqueça a frigideira em fogo *muito baixo* e derreta a manteiga.',
+                '4. Despeje os ovos e mexa constantemente com uma espátula de silicone, raspando as bordas para o centro.',
+                '5. Quando os ovos estiverem quase cozidos mas ainda úmidos, desligue o fogo.',
+                '6. Adicione o requeijão imediatamente e misture (o calor residual cozinha o resto). Finalize com cebolinha.'
+            ] 
+        },
+        { 
+            t: 'Mingau de Aveia Proteico', 
+            cal: 320, 
+            tags: ['Vegetariano', 'Fibras', 'Pós-Treino'], 
+            baseIng: [
+                '3 colheres (sopa) de aveia em flocos grossos', 
+                '200ml de leite desnatado ou vegetal (amêndoa)', 
+                '1 scoop de Whey Protein sabor Baunilha',
+                '1/2 maçã picada em cubos pequenos',
+                'Canela em pau e em pó'
+            ], 
+            baseInst: [
+                '1. Em uma panela pequena, coloque o leite, a aveia e a canela em pau.',
+                '2. Cozinhe em fogo médio, mexendo sempre, por cerca de 5 a 8 minutos até engrossar.',
+                '3. Quando atingir a consistência desejada, desligue o fogo e retire a canela em pau.',
+                '4. Espere amornar por 1 minuto e misture o Whey Protein vigorosamente para não empelotar.',
+                '5. Sirva em uma tigela, adicione a maçã picada e polvilhe canela em pó por cima.'
+            ] 
+        },
+        { 
+            t: 'Avocado Toast Perfeita', 
+            cal: 350, 
+            tags: ['Vegetariano', 'Gorduras Boas'], 
+            baseIng: [
+                '2 fatias de pão integral ou fermentação natural', 
+                '1/2 abacate maduro', 
+                'Suco de 1/2 limão',
+                '2 ovos',
+                'Pimenta calabresa (opcional)'
+            ], 
+            baseInst: [
+                '1. Toste as fatias de pão na torradeira ou frigideira até ficarem crocantes.',
+                '2. Amasse o abacate grosseiramente, temperando com sal, limão e pimenta.',
+                '3. Para os ovos: Cozinhe-os em água fervente por 6 minutos (gema mole) ou frite-os com pouco azeite.',
+                '4. Monte a torrada espalhando a pasta de abacate generosamente.',
+                '5. Coloque o ovo por cima. Faça um corte na gema antes de servir.'
+            ] 
+        },
+        { 
+            t: 'Overnight Oats de Frutas Vermelhas', 
+            cal: 290, 
+            tags: ['Vegano', 'Sem Lactose', 'Prático'], 
+            baseIng: [
+                '4 colheres (sopa) de aveia em flocos', 
+                '1 colher (sopa) de sementes de chia', 
+                '150ml de leite de coco',
+                '1/2 xícara de mix de frutas vermelhas (frescas ou congeladas)',
+                '1 fio de mel ou agave'
+            ], 
+            baseInst: [
+                '1. Em um pote de vidro com tampa, misture a aveia e a chia.',
+                '2. Adicione o leite de coco e o mel, mexendo bem para a chia não grudar no fundo.',
+                '3. Coloque as frutas vermelhas por cima sem misturar.',
+                '4. Tampe e leve à geladeira por no mínimo 4 horas (ideal fazer na noite anterior).',
+                '5. Consuma gelado pela manhã.'
+            ] 
+        }
     ];
 
-    // MEALS (Lunch/Dinner)
-    const mealTemplates = [
-        { t: 'Filé de Frango Grelhado', cal: 350, tags: ['Proteico', 'Low Carb', 'Sem Glúten'], baseIng: ['150g peito de frango', 'Limão', 'Mix de folhas'], baseInst: ['Tempere o frango com limão e sal', 'Grelhe até dourar', 'Sirva com salada variada'] },
-        { t: 'Salada de Grão de Bico', cal: 320, tags: ['Vegano', 'Sem Glúten', 'Fibras'], baseIng: ['1 xícara grão de bico cozido', 'Tomate cereja', 'Pepino'], baseInst: ['Misture todos os vegetais', 'Tempere com azeite, limão e sal'] },
-        { t: 'Tilápia ao Forno', cal: 300, tags: ['Proteico', 'Leve'], baseIng: ['Filé de tilápia', 'Ervas finas', 'Brócolis cozido'], baseInst: ['Tempere o peixe com ervas', 'Asse por 20min a 180ºC', 'Sirva com brócolis'] },
-        { t: 'Risoto de Couve-Flor', cal: 250, tags: ['Low Carb', 'Vegetariano'], baseIng: ['Couve-flor triturada', 'Queijo parmesão', 'Caldo de legumes'], baseInst: ['Refogue a couve-flor no azeite', 'Adicione o caldo aos poucos', 'Finalize com queijo ralado'] },
-        { t: 'Wrap de Atum', cal: 380, tags: ['Prático', 'Proteico'], baseIng: ['1 pão folha integral', '1 lata de atum', 'Alface e tomate'], baseInst: ['Misture atum com 1 colher de maionese light', 'Espalhe no pão', 'Enrole com salada'] },
-        { t: 'Escondidinho Fit', cal: 400, tags: ['Sem Glúten', 'Pré-Treino'], baseIng: ['Batata doce cozida', 'Carne moída magra', 'Cheiro verde'], baseInst: ['Faça um purê com a batata', 'Refogue a carne', 'Monte camadas e asse por 15min'] },
-        { t: 'Macarrão de Abobrinha', cal: 180, tags: ['Low Carb', 'Vegano'], baseIng: ['1 abobrinha fatiada fina', 'Molho de tomate caseiro', 'Manjericão'], baseInst: ['Fatie a abobrinha como espaguete', 'Refogue por 2 min', 'Adicione o molho quente'] }
+    // ALMOÇO
+    const lunchTemplates = [
+        { 
+            t: 'Filé de Frango Grelhado ao Limão', 
+            cal: 320, 
+            tags: ['Proteico', 'Low Carb', 'Sem Glúten'], 
+            baseIng: [
+                '2 filés de peito de frango médios (150g cada)', 
+                'Suco de 1 limão tahiti', 
+                '1 dente de alho amassado',
+                '1 colher (chá) de páprica defumada',
+                'Azeite de oliva'
+            ], 
+            baseInst: [
+                '1. Tempere os filés com o limão, alho, páprica, sal e pimenta. Deixe marinar por 15 minutos.',
+                '2. Aqueça bem uma frigideira antiaderente. Adicione um fio de azeite.',
+                '3. Coloque os filés (sem amontoar) e não mexa por 4 minutos para criar uma crosta dourada.',
+                '4. Vire e grelhe por mais 3-4 minutos até o centro estar cozido.',
+                '5. Retire do fogo e deixe a carne "descansar" por 2 minutos antes de cortar para manter a suculência.'
+            ] 
+        },
+        { 
+            t: 'Tilápia Assada com Crosta de Ervas', 
+            cal: 280, 
+            tags: ['Proteico', 'Leve', 'Ômega 3'], 
+            baseIng: [
+                '2 filés de tilápia', 
+                '2 colheres (sopa) de farelo de aveia', 
+                '1 colher (sopa) de ervas finas secas',
+                'Raspas de limão siciliano',
+                'Brócolis e cenoura para acompanhar'
+            ], 
+            baseInst: [
+                '1. Pré-aqueça o forno a 200°C.',
+                '2. Misture o farelo de aveia com as ervas, as raspas de limão e uma pitada de sal.',
+                '3. Seque os peixes com papel toalha e pincele azeite.',
+                '4. Pressione a mistura de ervas sobre a parte de cima dos filés.',
+                '5. Disponha em uma assadeira junto com os legumes. Asse por 15 a 20 minutos até a crosta dourar.'
+            ] 
+        },
+        { 
+            t: 'Risoto Fake de Couve-Flor', 
+            cal: 250, 
+            tags: ['Low Carb', 'Vegetariano', 'Fibras'], 
+            baseIng: [
+                '1/2 couve-flor média limpa', 
+                '1/2 cebola picada', 
+                '1 colher (sopa) de requeijão light',
+                '2 colheres (sopa) de queijo parmesão ralado',
+                'Caldo de legumes caseiro (ou água quente)'
+            ], 
+            baseInst: [
+                '1. Triture a couve-flor crua no processador ou liquidificador (modo pulsar) até ficar parecida com grãos de arroz.',
+                '2. Refogue a cebola no azeite até ficar transparente.',
+                '3. Adicione a couve-flor e refogue por 3 minutos. Acrescente um pouco de caldo (não precisa cobrir) e cozinhe até secar.',
+                '4. Quando estiver macia (al dente), desligue o fogo.',
+                '5. Misture o requeijão e o parmesão vigorosamente para dar a cremosidade de risoto.'
+            ] 
+        },
+        { 
+            t: 'Bowl de Salada Completa', 
+            cal: 380, 
+            tags: ['Sem Glúten', 'Fibras', 'Detox'], 
+            baseIng: [
+                'Mix de folhas verdes (alface, rúcula, agrião)', 
+                '1/2 xícara de grão de bico cozido', 
+                '1/2 pepino japonês fatiado',
+                '1 ovo cozido fatiado',
+                'Molho: 1 colher mostarda, 1 colher mel, azeite e limão'
+            ], 
+            baseInst: [
+                '1. Lave e seque bem as folhas. Rasgue-as com a mão para a base do prato.',
+                '2. Disponha o grão de bico, o pepino e o ovo em "seções" sobre as folhas.',
+                '3. Para o molho: Em um potinho, bata a mostarda, mel, azeite e limão com um garfo até emulsionar (ficar grosso).',
+                '4. Despeje o molho apenas na hora de comer para não murchar as folhas.'
+            ] 
+        },
+        { 
+            t: 'Escondidinho de Batata Doce e Carne', 
+            cal: 420, 
+            tags: ['Pré-Treino', 'Sem Glúten'], 
+            baseIng: [
+                '200g de batata doce cozida e descascada', 
+                '150g de patinho moído', 
+                '1/2 tomate picado',
+                'Cebola e alho',
+                '1 fatia de queijo mussarela light'
+            ], 
+            baseInst: [
+                '1. Amasse a batata doce quente com um garfo, adicione um pouco de leite desnatado se precisar para formar um purê rústico.',
+                '2. Refogue a carne moída com cebola, alho e tomate até ficar bem sequinha.',
+                '3. Em um refratário individual, faça uma camada com a carne moída.',
+                '4. Cubra com o purê de batata doce.',
+                '5. Coloque o queijo por cima e leve ao forno ou airfryer por 10 min a 200°C para gratinar.'
+            ] 
+        }
     ];
 
-    // SNACKS
+    // JANTAR (Similar to Lunch but lighter)
+    const dinnerTemplates = [
+        { 
+            t: 'Omelete de Forno com Legumes', 
+            cal: 220, 
+            tags: ['Low Carb', 'Vegetariano', 'Prático'], 
+            baseIng: [
+                '2 ovos inteiros + 1 clara', 
+                '1/2 abobrinha ralada', 
+                '1/2 cenoura ralada',
+                '1 colher (café) de fermento químico',
+                'Orégano'
+            ], 
+            baseInst: [
+                '1. Pré-aqueça o forno a 180°C.',
+                '2. Em uma tigela, bata os ovos com sal e orégano.',
+                '3. Adicione os legumes ralados (esprema a abobrinha para tirar o excesso de água) e o fermento.',
+                '4. Despeje em forminhas de silicone ou um refratário pequeno untado.',
+                '5. Asse por cerca de 20 minutos ou até ficar firme e dourado.'
+            ] 
+        },
+        { 
+            t: 'Sopa Creme de Abóbora com Gengibre', 
+            cal: 180, 
+            tags: ['Vegano', 'Detox', 'Leve'], 
+            baseIng: [
+                '300g de abóbora cabotiá descascada e picada', 
+                '1 pedaço de 2cm de gengibre fresco', 
+                '1/2 cebola',
+                'Água ou caldo de legumes',
+                'Sementes de abóbora para finalizar'
+            ], 
+            baseInst: [
+                '1. Refogue a cebola no azeite. Adicione a abóbora e o gengibre ralado.',
+                '2. Cubra com água fervente e cozinhe até a abóbora desmanchar (aprox. 20 min).',
+                '3. Bata tudo no liquidificador ou com um mixer na própria panela até virar um creme liso.',
+                '4. Volte ao fogo, acerte o sal e deixe ferver por mais 2 minutos.',
+                '5. Sirva com as sementes tostadas por cima.'
+            ] 
+        },
+        { 
+            t: 'Espaguete de Abobrinha à Bolonhesa', 
+            cal: 260, 
+            tags: ['Low Carb', 'Sem Glúten'], 
+            baseIng: [
+                '1 abobrinha grande', 
+                '150g de carne moída magra pronta (com molho de tomate)', 
+                'Manjericão fresco',
+                'Queijo parmesão ralado na hora'
+            ], 
+            baseInst: [
+                '1. Lave a abobrinha e use um fatiador espiral (ou descascador) para fazer tiras longas como macarrão.',
+                '2. Aqueça uma frigideira com um fio de azeite. Refogue a abobrinha rapidamente (2 minutos) para não soltar muita água.',
+                '3. Tempere a abobrinha com sal apenas no final.',
+                '4. Sirva a abobrinha no prato e cubra com o molho de carne bem quente.',
+                '5. Decore com manjericão e parmesão.'
+            ] 
+        },
+        { 
+            t: 'Salada de Atum com Feijão Branco', 
+            cal: 310, 
+            tags: ['Sem Glúten', 'Proteico', 'Frio'], 
+            baseIng: [
+                '1 lata de atum sólido em água (escorrido)', 
+                '1/2 xícara de feijão branco cozido (sem caldo)', 
+                'Cebola roxa picadinha',
+                'Salsinha picada',
+                'Azeite e vinagre de maçã'
+            ], 
+            baseInst: [
+                '1. Em uma tigela, desfaça as lascas do atum delicadamente.',
+                '2. Misture o feijão branco, a cebola roxa e a salsinha.',
+                '3. Tempere com bastante azeite, vinagre, sal e pimenta do reino.',
+                '4. Deixe na geladeira por 10 minutos antes de servir para apurar o sabor.',
+                '5. Pode ser servido sobre folhas de alface.'
+            ] 
+        },
+        { 
+            t: 'Wrap de Couve (Sem Massa)', 
+            cal: 150, 
+            tags: ['Low Carb', 'Vegano Opção', 'Leve'], 
+            baseIng: [
+                '2 folhas grandes de couve-manteiga (inteiras)', 
+                'Frango desfiado ou Hummus', 
+                'Cenoura ralada',
+                'Tomate picado'
+            ], 
+            baseInst: [
+                '1. Lave as folhas de couve e corte o talo grosso da base (sem separar a folha).',
+                '2. Passe as folhas rapidamente em água fervente (30 segundos) apenas para amolecer, e depois em água gelada (branqueamento). Seque bem.',
+                '3. Coloque o recheio (frango ou hummus) no centro da folha.',
+                '4. Adicione a cenoura e o tomate.',
+                '5. Enrole como um charuto, dobrando as laterais para dentro. Corte ao meio e sirva.'
+            ] 
+        }
+    ];
+
+    // LANCHES
     const snackTemplates = [
-        { t: 'Chips de Batata Doce', cal: 150, tags: ['Vegano', 'Sem Glúten'], baseIng: ['1 batata doce', 'Azeite', 'Alecrim'], baseInst: ['Fatie a batata bem fina', 'Tempere com azeite', 'Asse até ficar crocante'] },
-        { t: 'Muffin Proteico', cal: 180, tags: ['Proteico', 'Vegetariano'], baseIng: ['2 ovos', '1 scoop Whey protein', '1 banana'], baseInst: ['Misture todos os ingredientes', 'Coloque em forminhas', 'Asse por 15min'] },
-        { t: 'Iogurte com Chia', cal: 160, tags: ['Vegetariano', 'Probiótico'], baseIng: ['1 pote iogurte natural', '1 colher chia', 'Fio de mel'], baseInst: ['Misture a chia no iogurte', 'Deixe hidratar por 10min', 'Adoce com mel'] },
-        { t: 'Mix de Castanhas', cal: 200, tags: ['Vegano', 'Gorduras Boas'], baseIng: ['2 nozes', '2 castanhas do Pará', '5 amêndoas'], baseInst: ['Separe as porções em potinhos', 'Consuma nos lanches'] },
-        { t: 'Ovo de Codorna Temperado', cal: 140, tags: ['Low Carb', 'Proteico'], baseIng: ['6 ovos de codorna', 'Orégano', 'Azeite'], baseInst: ['Cozinhe os ovos', 'Descasque e tempere'] }
+        { 
+            t: 'Muffin de Banana com Cacau', 
+            cal: 160, 
+            tags: ['Vegetariano', 'Sem Glúten'], 
+            baseIng: [
+                '2 bananas maduras', 
+                '2 ovos', 
+                '2 colheres (sopa) de cacau em pó 100%', 
+                '1 colher (chá) de fermento',
+                'Gotas de chocolate 70% (opcional)'
+            ], 
+            baseInst: [
+                '1. Bata todos os ingredientes no liquidificador, exceto o fermento e as gotas de chocolate.',
+                '2. Misture o fermento delicadamente com uma colher.',
+                '3. Distribua em forminhas de cupcake (silicone é melhor) preenchendo 3/4 da forma.',
+                '4. Coloque as gotas de chocolate por cima.',
+                '5. Asse em forno pré-aquecido a 180°C por 15 a 20 minutos.'
+            ] 
+        },
+        { 
+            t: 'Chips de Batata Doce Caseiro', 
+            cal: 140, 
+            tags: ['Vegano', 'Crocante', 'Sem Glúten'], 
+            baseIng: [
+                '1 batata doce média', 
+                '1 colher (sopa) de azeite', 
+                'Alecrim seco',
+                'Sal grosso moído'
+            ], 
+            baseInst: [
+                '1. Lave bem a batata e fatie o mais fino possível (use um mandolim se tiver).',
+                '2. Deixe as fatias de molho em água gelada por 10 minutos (isso deixa mais crocante). Seque-as muito bem com pano.',
+                '3. Em uma tigela, envolva as fatias no azeite e alecrim.',
+                '4. Distribua na assadeira sem sobrepor (essencial).',
+                '5. Asse a 200°C por cerca de 15-20 minutos, virando na metade do tempo. Fique de olho para não queimar.'
+            ] 
+        },
+        { 
+            t: 'Iogurte Grego com Calda de Frutas', 
+            cal: 180, 
+            tags: ['Vegetariano', 'Proteico', 'Probiótico'], 
+            baseIng: [
+                '1 pote de iogurte natural desnatado ou grego zero', 
+                '1/2 xícara de morangos picados', 
+                '1 colher (chá) de sementes de chia',
+                'Adoçante natural (stevia ou xilitol)'
+            ], 
+            baseInst: [
+                '1. Para a calda rápida: Leve os morangos e o adoçante ao micro-ondas por 1 minuto. Amasse com um garfo.',
+                '2. Deixe a calda esfriar um pouco.',
+                '3. Misture a chia no iogurte.',
+                '4. Em um copo, alterne camadas de iogurte e da calda de morango.',
+                '5. Leve à geladeira por 10 minutos antes de comer.'
+            ] 
+        },
+        { 
+            t: 'Pasta de Grão de Bico (Homus) com Vegetais', 
+            cal: 200, 
+            tags: ['Vegano', 'Proteico', 'Fibras'], 
+            baseIng: [
+                '1 xícara de grão de bico cozido', 
+                '1 colher (sopa) de tahine (pasta de gergelim)', 
+                'Suco de 1/2 limão', 
+                '1 dente de alho pequeno',
+                'Cenoura e pepino em palitos para acompanhar'
+            ], 
+            baseInst: [
+                '1. No processador, bata o grão de bico, tahine, limão, alho e uma pitada de sal.',
+                '2. Adicione água gelada aos poucos enquanto bate, até atingir uma textura cremosa e clara.',
+                '3. Transfira para um pote e regue com azeite.',
+                '4. Corte a cenoura e o pepino em bastões.',
+                '5. Use os vegetais para "dippar" na pasta.'
+            ] 
+        }
     ];
 
-    // DRINKS
+    // BEBIDAS
     const drinkTemplates = [
-        { t: 'Suco Verde Detox', cal: 80, tags: ['Vegano', 'Detox'], baseIng: ['1 folha de couve', 'Suco de 1 limão', 'Gengibre', '200ml água'], baseInst: ['Bata tudo no liquidificador', 'Coe se preferir', 'Sirva gelado'] },
-        { t: 'Chá de Hibisco Gelado', cal: 5, tags: ['Vegano', 'Diurético'], baseIng: ['1 colher hibisco seco', '500ml água quente', 'Gelo'], baseInst: ['Faça a infusão por 5 min', 'Deixe esfriar', 'Sirva com muito gelo'] },
-        { t: 'Shake de Cacau', cal: 220, tags: ['Vegetariano', 'Proteico'], baseIng: ['200ml leite desnatado', '1 colher cacau 100%', '1 scoop Whey'], baseInst: ['Bata no liquidificador com gelo', 'Beba pós-treino'] },
-        { t: 'Água Aromatizada', cal: 0, tags: ['Vegano', 'Hidratação'], baseIng: ['1 litro água', 'Rodelas de limão', 'Ramos de hortelã'], baseInst: ['Coloque tudo numa jarra', 'Deixe curtir por 1h na geladeira'] },
-        { t: 'Golden Milk', cal: 120, tags: ['Anti-inflamatório', 'Vegetariano'], baseIng: ['200ml leite vegetal', '1 colher cúrcuma', 'Pimenta preta'], baseInst: ['Aqueça o leite', 'Misture as especiarias', 'Beba morno antes de dormir'] }
+        { 
+            t: 'Suco Verde Anti-Inchaço', 
+            cal: 60, 
+            tags: ['Vegano', 'Detox', 'Diurético'], 
+            baseIng: [
+                '1 folha grande de couve (sem o talo)', 
+                'Suco de 1 limão', 
+                '1 fatia grossa de abacaxi', 
+                '1 pedaço pequeno de gengibre',
+                '200ml de água de coco gelada'
+            ], 
+            baseInst: [
+                '1. Lave bem a couve.',
+                '2. Coloque todos os ingredientes no liquidificador.',
+                '3. Bata na potência máxima por 2 minutos para triturar bem a couve.',
+                '4. Se preferir, coe (mas beber com as fibras é melhor).',
+                '5. Sirva imediatamente com gelo.'
+            ] 
+        },
+        { 
+            t: 'Golden Milk (Leite Dourado)', 
+            cal: 110, 
+            tags: ['Vegetariano', 'Anti-inflamatório', 'Relaxante'], 
+            baseIng: [
+                '200ml de leite vegetal (amêndoa ou coco)', 
+                '1 colher (chá) de cúrcuma em pó (açafrão)', 
+                '1 pitada de pimenta do reino preta (ativa a cúrcuma)', 
+                '1 pitada de canela',
+                'Mel a gosto'
+            ], 
+            baseInst: [
+                '1. Em uma panela pequena, aqueça o leite (não deixe ferver completamente).',
+                '2. Adicione a cúrcuma, pimenta e canela.',
+                '3. Misture bem com um fouet ou colher até dissolver os pós.',
+                '4. Desligue o fogo e adoce com mel.',
+                '5. Beba morno, preferencialmente antes de dormir.'
+            ] 
+        },
+        { 
+            t: 'Chá Gelado de Hibisco com Laranja', 
+            cal: 15, 
+            tags: ['Vegano', 'Hidratação', 'Zero Açúcar'], 
+            baseIng: [
+                '1 colher (sopa) de hibisco seco', 
+                '500ml de água', 
+                'Rodelas de laranja com casca', 
+                'Pau de canela'
+            ], 
+            baseInst: [
+                '1. Ferva a água. Desligue o fogo.',
+                '2. Adicione o hibisco e a canela. Tampe e deixe em infusão por 5 a 8 minutos.',
+                '3. Coe o chá e deixe esfriar.',
+                '4. Em uma jarra com muito gelo, coloque as rodelas de laranja.',
+                '5. Despeje o chá sobre o gelo e sirva.'
+            ] 
+        }
     ];
 
     // Generator Helper
@@ -433,7 +830,7 @@ function generateRecipesFull(): Recipe[] {
         
         while(result.length < count) {
             const template = baseList[i % baseList.length];
-            const modifier = modifiers[Math.floor(Math.random() * modifiers.length)];
+            const modifier = modifiers[i % modifiers.length]; // Cycle modifiers sequentially
             
             // Image Logic (Placeholders by Category)
             let img = 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800'; 
@@ -446,8 +843,8 @@ function generateRecipesFull(): Recipe[] {
             // Create Recipe Object
             result.push({
                 id: `rec_${category.substring(0,3)}_${idCounter++}`,
-                title: `${template.t} ${modifier}`,
-                calories: template.cal + Math.floor(Math.random() * 40 - 20),
+                title: i < baseList.length ? template.t : `${template.t} ${modifier}`, // Only add modifier if looping
+                calories: template.cal,
                 time_minutes: 10 + Math.floor(Math.random() * 20),
                 image_url: img,
                 category: category as RecipeCategory,
@@ -462,8 +859,8 @@ function generateRecipesFull(): Recipe[] {
 
     allRecipes = [
         ...createVariations(breakfastTemplates, 'Café da Manhã', 30),
-        ...createVariations(mealTemplates, 'Almoço', 30),
-        ...createVariations(mealTemplates, 'Jantar', 30),
+        ...createVariations(lunchTemplates, 'Almoço', 30),
+        ...createVariations(dinnerTemplates, 'Jantar', 30),
         ...createVariations(snackTemplates, 'Lanche', 30),
         ...createVariations(drinkTemplates, 'Bebidas', 30)
     ];
