@@ -92,30 +92,35 @@ export const Recipes: React.FC = () => {
                   ))}
               </div>
 
-              {/* List (NO IMAGES on cards) */}
+              {/* List with Images */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {filteredRecipes.map((recipe) => (
                       <div 
                         key={recipe.id}
                         onClick={() => setSelectedRecipe(recipe)}
-                        className="flex flex-col p-5 bg-white dark:bg-brand-surface rounded-2xl border border-gray-100 dark:border-brand-border cursor-pointer hover:border-brand-accent/50 transition-all active:scale-[0.99] shadow-sm"
+                        className="flex flex-col bg-white dark:bg-brand-surface rounded-2xl border border-gray-100 dark:border-brand-border cursor-pointer hover:border-brand-accent/50 transition-all active:scale-[0.99] shadow-sm overflow-hidden"
                       >
-                          <div className="flex justify-between items-start mb-3">
-                              <h3 className="font-bold text-black dark:text-white leading-tight text-lg line-clamp-2 pr-2">{recipe.title}</h3>
-                              <div className="shrink-0 flex items-center gap-1 text-xs font-bold text-brand-accent bg-brand-accent/5 px-2 py-1 rounded-md">
+                          {/* Card Image */}
+                          <div className="h-32 w-full relative">
+                              <img src={recipe.image_url} alt={recipe.title} className="w-full h-full object-cover" />
+                              <div className="absolute top-2 right-2 flex items-center gap-1 text-[10px] font-bold text-white bg-black/50 px-2 py-1 rounded backdrop-blur-md">
                                   {recipe.calories} kcal
                               </div>
                           </div>
-                          
-                          <div className="flex flex-wrap gap-1.5 mb-4">
-                              {recipe.tags?.slice(0, 3).map(t => (
-                                  <span key={t} className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 rounded-md font-medium uppercase tracking-wide">{t}</span>
-                              ))}
-                          </div>
 
-                          <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-brand-muted mt-auto pt-2 border-t border-gray-100 dark:border-white/5">
-                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                              <span>Preparo: {recipe.time_minutes} min</span>
+                          <div className="p-4 flex flex-col flex-1">
+                                <h3 className="font-bold text-black dark:text-white leading-tight text-lg line-clamp-1 mb-2">{recipe.title}</h3>
+                                
+                                <div className="flex flex-wrap gap-1.5 mb-3">
+                                    {recipe.tags?.slice(0, 3).map(t => (
+                                        <span key={t} className="text-[10px] px-2 py-0.5 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 rounded-md font-medium uppercase tracking-wide">{t}</span>
+                                    ))}
+                                </div>
+
+                                <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-brand-muted mt-auto pt-2 border-t border-gray-100 dark:border-white/5">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                                    <span>Preparo: {recipe.time_minutes} min</span>
+                                </div>
                           </div>
                       </div>
                   ))}
@@ -129,7 +134,7 @@ export const Recipes: React.FC = () => {
           </div>
       )}
 
-      {/* --- LEVEL 3: RECIPE DETAIL MODAL (NO IMAGES) --- */}
+      {/* --- LEVEL 3: RECIPE DETAIL MODAL --- */}
       {selectedRecipe && (
           <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center p-0 md:p-6">
               <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setSelectedRecipe(null)}></div>
@@ -138,24 +143,24 @@ export const Recipes: React.FC = () => {
                   {/* Close Button */}
                   <button 
                     onClick={() => setSelectedRecipe(null)}
-                    className="absolute top-4 right-4 z-20 w-8 h-8 bg-black/20 hover:bg-black/40 rounded-full flex items-center justify-center text-white transition-colors"
+                    className="absolute top-4 right-4 z-20 w-8 h-8 bg-black/40 hover:bg-black/60 rounded-full flex items-center justify-center text-white transition-colors backdrop-blur-md"
                   >
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                   </button>
 
-                  {/* Header (No Image - Styled Background) */}
-                  <div className="p-8 bg-gradient-to-br from-brand-surface to-brand-dark border-b border-brand-border relative overflow-hidden">
-                      {/* Decorative Background Element */}
-                      <div className="absolute -top-10 -right-10 w-40 h-40 bg-brand-accent/10 rounded-full blur-3xl"></div>
+                  {/* Header Image */}
+                  <div className="h-48 md:h-56 w-full relative">
+                      <img src={selectedRecipe.image_url} alt={selectedRecipe.title} className="w-full h-full object-cover" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-brand-dark md:from-brand-surface to-transparent"></div>
                       
-                      <div className="relative z-10">
-                           <div className="flex flex-wrap gap-2 mb-3">
+                      <div className="absolute bottom-0 left-0 right-0 p-6 md:p-8">
+                           <div className="flex flex-wrap gap-2 mb-2">
                                {selectedRecipe.tags?.map(t => (
-                                   <span key={t} className="px-2 py-1 rounded bg-brand-accent/20 border border-brand-accent/30 text-[10px] font-bold text-brand-accent uppercase tracking-wider">{t}</span>
+                                   <span key={t} className="px-2 py-1 rounded bg-brand-accent/90 text-[10px] font-bold text-white uppercase tracking-wider shadow-sm">{t}</span>
                                ))}
                            </div>
-                           <h2 className="text-3xl font-bold text-white leading-tight mb-2">{selectedRecipe.title}</h2>
-                           <span className="text-sm text-brand-muted">{selectedRecipe.category}</span>
+                           <h2 className="text-2xl md:text-3xl font-bold text-white leading-tight mb-1">{selectedRecipe.title}</h2>
+                           <span className="text-sm text-gray-300">{selectedRecipe.category}</span>
                       </div>
                   </div>
 
