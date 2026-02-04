@@ -148,10 +148,8 @@ const generateRecipes = (): Recipe[] => {
 const MOCK_RECIPES = generateRecipes();
 
 // --- WORKOUTS (28 DAYS) ---
-// IMPORTANT: Paste your YouTube Links in the 'video_url' field below.
-// Example: video_url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
 const MOCK_WORKOUTS: Workout[] = [
-    { id: 'workout-1',  day_number: 1,  title: 'Treino Dia 1',  description: 'Treino de calistenia para iniciantes em casa - sem necessidade de equipamento.', duration_minutes: 22, difficulty: 'Iniciante', is_locked: false, completed: false, thumbnail_url: 'https://i.ytimg.com/vi/JQ7MIg2yX5g/hqdefault.jpg?sqp=-oaymwEmCKgBEF5IWvKriqkDGQgBFQAAiEIYAdgBAeIBCggYEAIYBjgBQAE=&rs=AOn4CLB4gXk8G6d0s7mbeu4rTc7U9AsULw', video_url: 'https://www.youtube.com/watch?v=JQ7MIg2yX5g&list=PLTyLuPOAwVwy_kfHBvTjsd14BNKoW_yLB' },
+    { id: 'workout-1',  day_number: 1,  title: 'Treino Dia 1',  description: 'Foco em força e estabilidade.', duration_minutes: 20, difficulty: 'Iniciante', is_locked: false, completed: false, thumbnail_url: 'https://picsum.photos/seed/101/800/600', video_url: '' },
     { id: 'workout-2',  day_number: 2,  title: 'Treino Dia 2',  description: 'Foco em força e estabilidade.', duration_minutes: 21, difficulty: 'Iniciante', is_locked: false, completed: false, thumbnail_url: 'https://picsum.photos/seed/102/800/600', video_url: '' },
     { id: 'workout-3',  day_number: 3,  title: 'Treino Dia 3',  description: 'Foco em força e estabilidade.', duration_minutes: 22, difficulty: 'Iniciante', is_locked: false, completed: false, thumbnail_url: 'https://picsum.photos/seed/103/800/600', video_url: '' },
     { id: 'workout-4',  day_number: 4,  title: 'Treino Dia 4',  description: 'Foco em força e estabilidade.', duration_minutes: 23, difficulty: 'Iniciante', is_locked: true,  completed: false, thumbnail_url: 'https://picsum.photos/seed/104/800/600', video_url: '' },
@@ -213,6 +211,7 @@ interface AppState {
   logJournal: (text: string) => Promise<void>;
   updateProfileStats: (height: number, targetWeight: number, currentWeight: number) => Promise<void>;
   updateAvatar: (url: string) => Promise<void>;
+  updateProgressPhoto: (type: 'start' | 'current', url: string) => Promise<void>; // New Action
   clearNewBadge: () => void;
 }
 
@@ -255,7 +254,6 @@ export const useAppStore = create<AppState>((set, get) => ({
             .single();
           
           if (error || !profile) {
-              // Self-healing for missing profiles (common during dev)
               const { data: { user } } = await supabase.auth.getUser();
               if (user) {
                    const { data: newProfile, error: insertError } = await supabase.from('profiles').insert({
@@ -330,6 +328,8 @@ export const useAppStore = create<AppState>((set, get) => ({
                   streak_days: profile.streak_days || 0,
                   is_premium: profile.is_premium,
                   avatar_url: profile.avatar_url,
+                  start_photo_url: profile.start_photo_url, // Maps from DB
+                  current_photo_url: profile.current_photo_url, // Maps from DB
                   weight_history: weightHistory,
                   earned_badges: [] 
               },
@@ -348,9 +348,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   login: async (email, password) => {
     try {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        
         if (error) throw error;
-
         if (data.user) {
             await get().fetchUserData(data.user.id);
             set({ currentScreen: AppScreen.DASHBOARD });
@@ -375,12 +373,9 @@ export const useAppStore = create<AppState>((set, get) => ({
                 }
             }
         });
-
         if (error) throw error;
-
         if (data.user) {
             if (data.session) {
-                // Ensure profile exists
                 await supabase.from('profiles').insert({
                     id: data.user.id,
                     email: email,
@@ -389,7 +384,6 @@ export const useAppStore = create<AppState>((set, get) => ({
                     target_weight_kg: 55,
                     height_cm: 160
                 }).select();
-                
                 await get().fetchUserData(data.user.id);
                 set({ currentScreen: AppScreen.DASHBOARD });
                 return true;
@@ -406,19 +400,13 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   resetPassword: async (email) => {
       try {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-            redirectTo: window.location.origin, 
-        });
+        const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin });
         return !error;
-      } catch(e) {
-          return false;
-      }
+      } catch(e) { return false; }
   },
   
   logout: async () => {
-      try {
-        await supabase.auth.signOut();
-      } catch(e) {}
+      try { await supabase.auth.signOut(); } catch(e) {}
       set({ user: null, currentScreen: AppScreen.AUTH });
   },
 
@@ -427,21 +415,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   toggleCompleteWorkout: async (id) => {
     const { user, workouts } = get();
     if (!user) return;
-    
-    // Optimistic UI Update
-    set({
-        workouts: workouts.map(w => w.id === id ? { ...w, completed: !w.completed } : w)
-    });
-
+    set({ workouts: workouts.map(w => w.id === id ? { ...w, completed: !w.completed } : w) });
     const workout = workouts.find(w => w.id === id);
     if (!workout) return;
-
     if (!workout.completed) {
         try {
-            await supabase.from('user_workout_progress').insert({
-                user_id: user.id,
-                workout_id: id 
-            });
+            await supabase.from('user_workout_progress').insert({ user_id: user.id, workout_id: id });
             get().logJournal(`Concluí o treino: ${workout.title} 🔥`);
         } catch (e) {}
     }
@@ -450,20 +429,12 @@ export const useAppStore = create<AppState>((set, get) => ({
   toggleCompleteMindset: async (id) => {
       const { user, mindsetItems } = get();
       if (!user) return;
-
-      set({
-          mindsetItems: mindsetItems.map(m => m.id === id ? { ...m, completed: !m.completed } : m)
-      });
-
+      set({ mindsetItems: mindsetItems.map(m => m.id === id ? { ...m, completed: !m.completed } : m) });
       const item = mindsetItems.find(i => i.id === id);
       if(!item) return;
-
       if (!item.completed) {
            try {
-              await supabase.from('user_mindset_progress').insert({
-                  user_id: user.id,
-                  item_id: id 
-              });
+              await supabase.from('user_mindset_progress').insert({ user_id: user.id, item_id: id });
            } catch(e) {}
       }
   },
@@ -473,10 +444,8 @@ export const useAppStore = create<AppState>((set, get) => ({
   logWeight: async (newWeight) => {
       const { user } = get();
       if (!user) return;
-
       const today = new Date();
       const dateLabel = today.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-      
       set((state) => ({
           user: state.user ? {
               ...state.user,
@@ -484,7 +453,6 @@ export const useAppStore = create<AppState>((set, get) => ({
               weight_history: [...state.user.weight_history, { date: dateLabel, weight: newWeight }]
           } : null
       }));
-
       try {
         await supabase.from('weight_logs').insert({ user_id: user.id, weight_kg: newWeight });
         await supabase.from('profiles').update({ current_weight_kg: newWeight }).eq('id', user.id);
@@ -494,62 +462,58 @@ export const useAppStore = create<AppState>((set, get) => ({
   logWater: async (amountL) => {
       const { user, waterIntakeL } = get();
       if (!user) return;
-
       set({ waterIntakeL: Number((waterIntakeL + amountL).toFixed(1)) });
-
-      try {
-          await supabase.from('water_logs').insert({ user_id: user.id, amount_ml: amountL * 1000 });
-      } catch(e) {}
+      try { await supabase.from('water_logs').insert({ user_id: user.id, amount_ml: amountL * 1000 }); } catch(e) {}
   },
 
   logJournal: async (text) => {
       const { user, journal } = get();
       if (!user) return;
-
       const newEntry: JournalEntry = {
         id: Date.now().toString(),
         date: new Date().toLocaleDateString('pt-BR'),
         content: text
       };
       set({ journal: [newEntry, ...journal] });
-
-      try {
-          await supabase.from('journal_entries').insert({ user_id: user.id, content: text });
-      } catch(e) {}
+      try { await supabase.from('journal_entries').insert({ user_id: user.id, content: text }); } catch(e) {}
   },
 
   updateProfileStats: async (height, targetWeight, currentWeight) => {
       const { user } = get();
       if (!user) return;
-
       set((state) => ({
-          user: state.user ? {
-              ...state.user,
-              height_cm: height,
-              target_weight_kg: targetWeight,
-              current_weight_kg: currentWeight
-          } : null
+          user: state.user ? { ...state.user, height_cm: height, target_weight_kg: targetWeight, current_weight_kg: currentWeight } : null
       }));
-
       try {
-          await supabase.from('profiles').update({
-              height_cm: height,
-              target_weight_kg: targetWeight,
-              current_weight_kg: currentWeight
-          }).eq('id', user.id);
+          await supabase.from('profiles').update({ height_cm: height, target_weight_kg: targetWeight, current_weight_kg: currentWeight }).eq('id', user.id);
       } catch(e) {}
   },
 
   updateAvatar: async (url: string) => {
       const { user } = get();
       if (!user) return;
+      set((state) => ({ user: state.user ? { ...state.user, avatar_url: url } : null }));
+      try { await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id); } catch(e) {}
+  },
 
+  updateProgressPhoto: async (type: 'start' | 'current', url: string) => {
+      const { user } = get();
+      if (!user) return;
+      
       set((state) => ({
-          user: state.user ? { ...state.user, avatar_url: url } : null
+          user: state.user ? {
+              ...state.user,
+              start_photo_url: type === 'start' ? url : state.user.start_photo_url,
+              current_photo_url: type === 'current' ? url : state.user.current_photo_url
+          } : null
       }));
 
+      // In a real scenario, we'd upload this to Supabase Storage and get a URL.
+      // For this demo, we save the Data URL directly if the schema allows, or assume backend handles it.
+      // We'll update the profile row.
       try {
-          await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id);
+          const field = type === 'start' ? 'start_photo_url' : 'current_photo_url';
+          await supabase.from('profiles').update({ [field]: url }).eq('id', user.id);
       } catch(e) {}
   },
 

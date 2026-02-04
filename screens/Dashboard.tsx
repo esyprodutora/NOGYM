@@ -1,16 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useAppStore } from '../store/appStore';
 import { WeightChart } from '../components/WeightChart';
 import { TrackingModal } from '../components/TrackingModal';
 import { AppScreen } from '../types';
 
 export const Dashboard: React.FC = () => {
-  const { user, workouts, selectWorkout, dailyTip, waterIntakeL, logWeight, logWater, logJournal, updateProfileStats, newBadgeUnlocked, clearNewBadge, badges } = useAppStore();
+  const { user, workouts, selectWorkout, dailyTip, waterIntakeL, logWeight, logWater, logJournal, updateProfileStats, updateProgressPhoto, newBadgeUnlocked, clearNewBadge, badges } = useAppStore();
   const [greeting, setGreeting] = useState('');
   
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState<'weight' | 'water' | 'journal' | 'stats'>('weight');
+
+  const startPhotoInputRef = useRef<HTMLInputElement>(null);
+  const currentPhotoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const hour = new Date().getHours();
@@ -22,6 +25,19 @@ export const Dashboard: React.FC = () => {
   const openModal = (type: 'weight' | 'water' | 'journal' | 'stats') => {
       setModalType(type);
       setModalOpen(true);
+  };
+
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>, type: 'start' | 'current') => {
+      if (e.target.files && e.target.files[0]) {
+          const file = e.target.files[0];
+          const reader = new FileReader();
+          reader.onload = (ev) => {
+              if (ev.target?.result) {
+                  updateProgressPhoto(type, ev.target.result as string);
+              }
+          };
+          reader.readAsDataURL(file);
+      }
   };
 
   const nextWorkout = workouts.find(w => !w.completed);
@@ -59,6 +75,56 @@ export const Dashboard: React.FC = () => {
             </div>
         </div>
 
+        {/* --- TRANSFORMATION SECTION (New Top Feature) --- */}
+        <section>
+            <h2 className="text-lg font-bold text-black dark:text-white mb-4">Sua Transformação</h2>
+            <div className="grid grid-cols-2 gap-4">
+                {/* Start Photo */}
+                <div 
+                    onClick={() => startPhotoInputRef.current?.click()}
+                    className="aspect-[3/4] rounded-2xl bg-gray-200 dark:bg-brand-surface border-2 border-dashed border-gray-300 dark:border-white/10 relative overflow-hidden cursor-pointer group hover:border-brand-accent/50 transition-colors"
+                >
+                    <input type="file" ref={startPhotoInputRef} className="hidden" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'start')} />
+                    {user?.start_photo_url ? (
+                        <>
+                             <img src={user.start_photo_url} className="w-full h-full object-cover" />
+                             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors"></div>
+                        </>
+                    ) : (
+                         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 dark:text-brand-muted">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7"></path><line x1="16" y1="5" x2="22" y2="5"></line><line x1="19" y1="2" x2="19" y2="8"></line><circle cx="9" cy="9" r="2"></circle><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"></path></svg>
+                            <span className="text-xs mt-2 font-medium">Adicionar Foto</span>
+                         </div>
+                    )}
+                    <div className="absolute bottom-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold text-white uppercase tracking-wider">
+                        Início
+                    </div>
+                </div>
+
+                {/* Current Photo */}
+                <div 
+                    onClick={() => currentPhotoInputRef.current?.click()}
+                    className="aspect-[3/4] rounded-2xl bg-gray-200 dark:bg-brand-surface border-2 border-dashed border-gray-300 dark:border-white/10 relative overflow-hidden cursor-pointer group hover:border-brand-accent/50 transition-colors"
+                >
+                     <input type="file" ref={currentPhotoInputRef} className="hidden" accept="image/*" onChange={(e) => handlePhotoUpload(e, 'current')} />
+                     {user?.current_photo_url ? (
+                        <>
+                             <img src={user.current_photo_url} className="w-full h-full object-cover" />
+                             <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors"></div>
+                        </>
+                    ) : (
+                         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 dark:text-brand-muted">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                            <span className="text-xs mt-2 font-medium">Adicionar Foto</span>
+                         </div>
+                    )}
+                    <div className="absolute bottom-3 left-3 bg-brand-accent/90 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold text-white uppercase tracking-wider shadow-lg">
+                        Hoje
+                    </div>
+                </div>
+            </div>
+        </section>
+
         {/* Daily Wisdom / Tip Card */}
         {dailyTip && (
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-[#2a1b26] to-black border border-brand-accent/20 shadow-lg p-5">
@@ -77,67 +143,7 @@ export const Dashboard: React.FC = () => {
             </div>
         )}
 
-        {/* --- BODY COMPOSITION CARD (Interactive & Data-Rich) --- */}
-        <section className="bg-white dark:bg-brand-surface rounded-3xl p-6 border border-gray-200 dark:border-brand-border shadow-sm">
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
-                    Composição Corporal
-                </h2>
-                <button 
-                    onClick={() => openModal('stats')}
-                    className="text-xs font-bold text-brand-accent bg-brand-accent/10 px-3 py-1.5 rounded-full hover:bg-brand-accent/20 transition-colors"
-                >
-                    Editar Dados
-                </button>
-            </div>
-
-            {/* Main Stats Grid */}
-            <div className="grid grid-cols-2 gap-8 mb-8">
-                {/* IMC */}
-                <div className="relative">
-                    <span className="block text-xs text-gray-500 dark:text-brand-muted uppercase mb-1">IMC Atual</span>
-                    <div className="flex items-end gap-2">
-                        <span className="text-4xl font-bold text-black dark:text-white">{bmiValue}</span>
-                        <div className={`mb-1.5 px-2 py-0.5 rounded text-[10px] font-bold border ${Number(bmiValue) < 25 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
-                            {bmiCategory}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Weight Trend Mini Summary */}
-                <div className="flex flex-col justify-center items-end">
-                     <span className="block text-xs text-gray-500 dark:text-brand-muted uppercase mb-1">Perdido</span>
-                     <span className="text-2xl font-bold text-brand-accent">
-                         {(user!.starting_weight_kg - user!.current_weight_kg).toFixed(1)} <span className="text-sm text-gray-500">kg</span>
-                     </span>
-                </div>
-            </div>
-
-            {/* Secondary Stats Row */}
-            <div className="grid grid-cols-3 gap-4 mb-6">
-                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
-                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Altura</span>
-                    <span className="text-lg font-bold text-black dark:text-white">{user?.height_cm} <span className="text-xs font-normal text-gray-500">cm</span></span>
-                </div>
-                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
-                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Peso Atual</span>
-                    <span className="text-lg font-bold text-black dark:text-white">{user?.current_weight_kg} <span className="text-xs font-normal text-gray-500">kg</span></span>
-                </div>
-                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
-                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Meta</span>
-                    <span className="text-lg font-bold text-brand-accent">{user?.target_weight_kg} <span className="text-xs font-normal text-brand-accent/70">kg</span></span>
-                </div>
-            </div>
-
-            {/* Weight Chart Integration */}
-            <div className="pt-4 border-t border-gray-100 dark:border-brand-border/50">
-                 <h3 className="text-xs font-bold text-gray-400 dark:text-brand-muted uppercase mb-4">Tendência Real</h3>
-                 {user?.weight_history && <WeightChart data={user.weight_history} />}
-            </div>
-        </section>
-
-        {/* --- DAILY TRACKER (Redesigned) --- */}
+        {/* --- DAILY TRACKER --- */}
         <section>
             <h2 className="text-lg font-bold text-black dark:text-white mb-4">Registro Diário</h2>
             <div className="grid grid-cols-3 gap-3">
@@ -229,6 +235,67 @@ export const Dashboard: React.FC = () => {
                 </div>
             </div>
         )}
+
+        {/* --- BODY COMPOSITION CARD (Moved to Bottom) --- */}
+        <section className="bg-white dark:bg-brand-surface rounded-3xl p-6 border border-gray-200 dark:border-brand-border shadow-sm mt-8">
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-lg font-bold text-black dark:text-white flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-accent"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"></path><line x1="16" y1="8" x2="2" y2="22"></line><line x1="17.5" y1="15" x2="9" y2="15"></line></svg>
+                    Composição Corporal
+                </h2>
+                <button 
+                    onClick={() => openModal('stats')}
+                    className="text-xs font-bold text-brand-accent bg-brand-accent/10 px-3 py-1.5 rounded-full hover:bg-brand-accent/20 transition-colors"
+                >
+                    Editar Dados
+                </button>
+            </div>
+
+            {/* Main Stats Grid */}
+            <div className="grid grid-cols-2 gap-8 mb-8">
+                {/* IMC */}
+                <div className="relative">
+                    <span className="block text-xs text-gray-500 dark:text-brand-muted uppercase mb-1">IMC Atual</span>
+                    <div className="flex items-end gap-2">
+                        <span className="text-4xl font-bold text-black dark:text-white">{bmiValue}</span>
+                        <div className={`mb-1.5 px-2 py-0.5 rounded text-[10px] font-bold border ${Number(bmiValue) < 25 ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'}`}>
+                            {bmiCategory}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Weight Trend Mini Summary */}
+                <div className="flex flex-col justify-center items-end">
+                     <span className="block text-xs text-gray-500 dark:text-brand-muted uppercase mb-1">Perdido</span>
+                     <span className="text-2xl font-bold text-brand-accent">
+                         {(user!.starting_weight_kg - user!.current_weight_kg).toFixed(1)} <span className="text-sm text-gray-500">kg</span>
+                     </span>
+                </div>
+            </div>
+
+            {/* Secondary Stats Row */}
+            <div className="grid grid-cols-3 gap-4 mb-6">
+                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
+                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Altura</span>
+                    <span className="text-lg font-bold text-black dark:text-white">{user?.height_cm} <span className="text-xs font-normal text-gray-500">cm</span></span>
+                </div>
+                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
+                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Peso Atual</span>
+                    <span className="text-lg font-bold text-black dark:text-white">{user?.current_weight_kg} <span className="text-xs font-normal text-gray-500">kg</span></span>
+                </div>
+                <div className="bg-gray-50 dark:bg-black/20 p-3 rounded-xl border border-gray-100 dark:border-brand-border/50 text-center">
+                    <span className="block text-[10px] text-gray-500 dark:text-brand-muted uppercase mb-1">Meta</span>
+                    <span className="text-lg font-bold text-brand-accent">{user?.target_weight_kg} <span className="text-xs font-normal text-brand-accent/70">kg</span></span>
+                </div>
+            </div>
+
+            {/* Weight Chart Integration */}
+            <div className="pt-4 border-t border-gray-100 dark:border-brand-border/50">
+                 <h3 className="text-xs font-bold text-gray-400 dark:text-brand-muted uppercase mb-4">Tendência Real</h3>
+                 {user?.weight_history && <WeightChart data={user.weight_history} />}
+            </div>
+        </section>
+
       </div>
 
       {/* Tracking Modal Component */}
