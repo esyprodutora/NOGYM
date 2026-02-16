@@ -93,9 +93,17 @@ export const Auth: React.FC = () => {
              
              {/* Desktop Logo Slogan */}
              <div className="hidden md:flex absolute inset-0 flex-col justify-between p-12 z-20 pointer-events-none">
-                 <div className="flex items-center gap-3">
-                    <span className="text-4xl font-bold tracking-tighter text-brand-accent drop-shadow-lg">Seca <span className="text-white">em Casa</span></span>
+                 <div className="flex flex-col items-start">
+                    <span className="text-lg font-bold text-zinc-500 uppercase tracking-[0.4em] mb-2 ml-1">Desafio</span>
+                    <div className="flex flex-col">
+                        <h1 className="text-8xl font-black italic text-brand-accent leading-[0.85] tracking-tighter drop-shadow-[0_0_25px_rgba(255,85,0,0.6)]">
+                            SECA EM<br/>CASA
+                        </h1>
+                        <span className="text-3xl font-light text-white tracking-[0.3em] self-end mt-4">15 DIAS</span>
+                    </div>
+                    <span className="text-sm font-medium text-zinc-600 uppercase tracking-widest mt-12">By NoGym</span>
                  </div>
+                 
                  <div className="max-w-xl">
                      <h2 className="text-5xl font-bold text-white mb-4 leading-tight">Transforme seu corpo em 15 dias.</h2>
                      <p className="text-xl text-gray-200">Desafio intenso, resultados reais, sem equipamentos.</p>
@@ -107,16 +115,23 @@ export const Auth: React.FC = () => {
         <div className="relative z-10 flex-1 flex flex-col p-8 overflow-y-auto no-scrollbar md:bg-zinc-900 md:max-w-md md:justify-center md:shadow-2xl md:border-l md:border-white/5">
             <div className="mt-8 mb-auto md:mt-0 md:mb-0">
                  {/* Mobile Logo */}
-                 <div className="md:hidden flex items-center gap-3 mb-6">
-                    <span className="text-3xl font-bold tracking-tighter text-brand-accent">Seca <span className="text-white">em Casa</span></span>
-                </div>
+                 <div className="md:hidden flex flex-col items-center mb-10">
+                    <div className="flex flex-col relative">
+                        <span className="text-xs font-bold text-zinc-500 uppercase tracking-[0.4em] mb-1 ml-1 self-start">Desafio</span>
+                        <h1 className="text-5xl font-black italic text-brand-accent leading-[0.85] tracking-tighter drop-shadow-[0_0_15px_rgba(255,85,0,0.5)]">
+                            SECA EM<br/>CASA
+                        </h1>
+                        <span className="text-xl font-light text-white tracking-[0.2em] self-end -mt-1">15 DIAS</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-600 font-medium uppercase tracking-widest mt-6">By NoGym</span>
+                 </div>
                 
-                <h1 className="text-4xl font-bold text-white leading-tight mb-2">
+                <h1 className="text-3xl font-bold text-white leading-tight mb-2">
                     {view === 'login' && "Bem-vinda de volta."}
                     {view === 'register' && "Aceite o Desafio."}
                     {view === 'forgot_password' && "Recupere seu acesso."}
                 </h1>
-                <p className="text-gray-300 mb-8">
+                <p className="text-gray-400 mb-8 text-sm">
                     {view === 'login' && "Entre para continuar sua evolução de 15 dias."}
                     {view === 'register' && "Comece agora sua jornada de 15 dias para secar."}
                     {view === 'forgot_password' && "Insira seu e-mail para redefinir a senha."}
