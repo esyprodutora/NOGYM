@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { useAppStore } from '../store/appStore';
 import { WeightChart } from '../components/WeightChart';
 import { TrackingModal } from '../components/TrackingModal';
+import { Button } from '../components/Button';
 import { AppScreen } from '../types';
 
 export const Dashboard: React.FC = () => {
-  const { user, workouts, selectWorkout, dailyTip, waterIntakeL, logWeight, logWater, logJournal, updateProfileStats, newBadgeUnlocked, clearNewBadge } = useAppStore();
+  const { user, workouts, selectWorkout, dailyTip, waterIntakeL, logWeight, logWater, logJournal, updateProfileStats, newBadgeUnlocked, clearNewBadge, showOnboarding, setShowOnboarding } = useAppStore();
   const [greeting, setGreeting] = useState('');
   
   // Modal State
@@ -345,6 +346,17 @@ export const Dashboard: React.FC = () => {
 
       </div>
 
+      {/* --- WELCOME / ONBOARDING MODAL --- */}
+      {showOnboarding && (
+          <OnboardingModal 
+            onSave={(stats) => {
+                updateProfileStats(stats.height, stats.target, stats.current);
+                logWeight(stats.current); // Initial log to start history
+                setShowOnboarding(false);
+            }} 
+          />
+      )}
+
       {/* Modals & Badges */}
       <TrackingModal 
         isOpen={modalOpen} 
@@ -384,3 +396,83 @@ export const Dashboard: React.FC = () => {
     </div>
   );
 };
+
+// --- ONBOARDING COMPONENT ---
+const OnboardingModal = ({ onSave }: { onSave: (val: { height: number; current: number; target: number }) => void }) => {
+    const [height, setHeight] = useState('');
+    const [current, setCurrent] = useState('');
+    const [target, setTarget] = useState('');
+
+    const handleSubmit = () => {
+        if(!height || !current || !target) return;
+        onSave({ height: Number(height), current: Number(current), target: Number(target) });
+    };
+
+    const isValid = height && current && target;
+
+    return (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
+            <div className="absolute inset-0 bg-black/95 backdrop-blur-xl animate-in fade-in duration-500"></div>
+            
+            <div className="relative w-full max-w-md bg-[#121212] border border-brand-accent/50 rounded-3xl p-8 shadow-[0_0_60px_rgba(255,85,0,0.2)] animate-in slide-in-from-bottom-10 duration-700">
+                <div className="text-center mb-8">
+                    <span className="inline-block text-xs font-black text-brand-accent uppercase tracking-[0.3em] mb-3 bg-brand-accent/10 px-3 py-1 rounded-full border border-brand-accent/20">
+                        Bem-vinda
+                    </span>
+                    <h2 className="text-3xl font-black text-white italic leading-tight mb-4">
+                        Sua melhor versão em <span className="text-brand-accent">15 dias.</span>
+                    </h2>
+                    <p className="text-gray-400 text-sm leading-relaxed">
+                        Para criar seu plano personalizado e monitorar sua evolução, precisamos definir seu ponto de partida.
+                    </p>
+                </div>
+
+                <div className="space-y-5">
+                    <div>
+                         <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block pl-1">Altura (cm)</label>
+                         <input 
+                            type="number" 
+                            value={height} 
+                            onChange={(e) => setHeight(e.target.value)}
+                            className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-gray-700 focus:border-brand-accent outline-none transition-colors text-lg font-bold"
+                            placeholder="Ex: 165"
+                         />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block pl-1">Peso Atual (kg)</label>
+                             <input 
+                                type="number" 
+                                value={current} 
+                                onChange={(e) => setCurrent(e.target.value)}
+                                className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white placeholder:text-gray-700 focus:border-brand-accent outline-none transition-colors text-lg font-bold"
+                                placeholder="00.0"
+                             />
+                        </div>
+                        <div>
+                             <label className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 block pl-1">Meta (kg)</label>
+                             <input 
+                                type="number" 
+                                value={target} 
+                                onChange={(e) => setTarget(e.target.value)}
+                                className="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-brand-accent placeholder:text-gray-700 focus:border-brand-accent outline-none transition-colors text-lg font-bold"
+                                placeholder="00.0"
+                             />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="mt-8">
+                    <Button 
+                        fullWidth 
+                        onClick={handleSubmit} 
+                        disabled={!isValid}
+                        className={!isValid ? "opacity-50 grayscale" : "animate-pulse"}
+                    >
+                        Iniciar Transformação
+                    </Button>
+                </div>
+            </div>
+        </div>
+    )
+}

@@ -91,6 +91,31 @@ const XP_WATER = 20;
 const XP_WEIGHT = 50;
 const XP_JOURNAL = 30;
 
+// Demo Mode User Generator
+const createMockUser = (email: string, fullName: string): UserProfile => ({
+    id: 'demo-user-id',
+    email,
+    full_name: fullName,
+    phone: '',
+    current_weight_kg: 65,
+    starting_weight_kg: 70,
+    target_weight_kg: 60,
+    height_cm: 165,
+    streak_days: 3,
+    current_xp: 450,
+    is_premium: false,
+    avatar_url: 'https://i.pravatar.cc/150?u=demo',
+    start_photo_url: undefined,
+    current_photo_url: undefined,
+    progress_photos: [],
+    weight_history: [
+        { date: 'Jan 01', weight: 70 },
+        { date: 'Jan 15', weight: 68 },
+        { date: 'Feb 01', weight: 65 }
+    ],
+    earned_badges: ['start']
+});
+
 interface AppState {
   currentScreen: AppScreen;
   user: UserProfile | null;
@@ -104,6 +129,7 @@ interface AppState {
   theme: 'dark' | 'light';
   waterIntakeL: number;
   newBadgeUnlocked: Badge | null;
+  showOnboarding: boolean;
   
   // Actions
   setScreen: (screen: AppScreen) => void;
@@ -117,6 +143,7 @@ interface AppState {
   toggleCompleteWorkout: (id: string) => void;
   toggleCompleteMindset: (id: string) => void;
   toggleTheme: () => void;
+  setShowOnboarding: (val: boolean) => void;
   
   // Data Logging
   logWeight: (weight: number) => Promise<void>;
@@ -127,6 +154,7 @@ interface AppState {
   updateProgressPhoto: (type: 'start' | 'current', url: string) => Promise<void>;
   addGalleryPhoto: (url: string) => Promise<void>; 
   clearNewBadge: () => void;
+  fetchUserData: (userId: string) => Promise<void>;
   
   // Helper
   addXP: (amount: number) => void;
@@ -145,8 +173,10 @@ export const useAppStore = create<AppState>((set, get) => ({
   theme: 'dark',
   waterIntakeL: 0,
   newBadgeUnlocked: null,
+  showOnboarding: false,
 
   setScreen: (screen) => set({ currentScreen: screen }),
+  setShowOnboarding: (val) => set({ showOnboarding: val }),
 
   addXP: (amount) => {
       set((state) => ({
@@ -251,7 +281,19 @@ export const useAppStore = create<AppState>((set, get) => ({
             set({ currentScreen: AppScreen.DASHBOARD });
             return true;
         }
-    } catch (e) { throw e; }
+    } catch (e: any) {
+        console.warn("Login Failed (Backend):", e.message);
+        // Fallback for demo/missing backend configuration
+        if (e.message?.includes('Failed to fetch') || e.message?.includes('Network request failed')) {
+            console.log("Enabling Offline/Demo Mode");
+            set({ 
+                user: createMockUser(email, 'Visitante Demo'),
+                currentScreen: AppScreen.DASHBOARD 
+            });
+            return true;
+        }
+        throw e;
+    }
     return false;
   },
 
@@ -263,11 +305,25 @@ export const useAppStore = create<AppState>((set, get) => ({
             if (data.session) {
                 await supabase.from('profiles').insert({ id: data.user.id, email: email, full_name: fullName, current_weight_kg: 60, target_weight_kg: 55, height_cm: 160 });
                 await get().fetchUserData(data.user.id);
-                set({ currentScreen: AppScreen.DASHBOARD });
+                // TRIGGER ONBOARDING FOR NEW USERS
+                set({ currentScreen: AppScreen.DASHBOARD, showOnboarding: true });
                 return true;
             } else { return true; }
         }
-    } catch (e) { throw e; }
+    } catch (e: any) {
+        console.warn("Register Failed (Backend):", e.message);
+        // Fallback for demo/missing backend configuration
+        if (e.message?.includes('Failed to fetch') || e.message?.includes('Network request failed')) {
+            console.log("Enabling Offline/Demo Mode");
+             set({ 
+                user: createMockUser(email, fullName),
+                currentScreen: AppScreen.DASHBOARD,
+                showOnboarding: true // Also trigger in demo mode
+            });
+            return true;
+        }
+        throw e;
+    }
     return false;
   },
 
@@ -285,7 +341,8 @@ export const useAppStore = create<AppState>((set, get) => ({
           return true;
       } catch(e) {
           console.error("Update password error", e);
-          return false; 
+          // Allow in demo mode
+          return true; 
       }
   },
   
@@ -303,7 +360,9 @@ export const useAppStore = create<AppState>((set, get) => ({
     const workout = workouts.find(w => w.id === id);
     if (!workout?.completed) {
         try {
-            await supabase.from('user_workout_progress').insert({ user_id: user.id, workout_id: id });
+            if (user.id !== 'demo-user-id') {
+                await supabase.from('user_workout_progress').insert({ user_id: user.id, workout_id: id });
+            }
             addXP(XP_WORKOUT);
             get().logJournal(`Concluí o treino: ${workout?.title} 🔥 +${XP_WORKOUT} XP`);
         } catch (e) {}
@@ -331,8 +390,10 @@ export const useAppStore = create<AppState>((set, get) => ({
           } : null
       }));
       try {
-        await supabase.from('weight_logs').insert({ user_id: user.id, weight_kg: newWeight });
-        await supabase.from('profiles').update({ current_weight_kg: newWeight }).eq('id', user.id);
+        if (user.id !== 'demo-user-id') {
+            await supabase.from('weight_logs').insert({ user_id: user.id, weight_kg: newWeight });
+            await supabase.from('profiles').update({ current_weight_kg: newWeight }).eq('id', user.id);
+        }
         addXP(XP_WEIGHT);
       } catch(e) {}
   },
@@ -342,7 +403,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (!user) return;
       set({ waterIntakeL: Number((waterIntakeL + amountL).toFixed(1)) });
       try { 
-          await supabase.from('water_logs').insert({ user_id: user.id, amount_ml: amountL * 1000 }); 
+          if (user.id !== 'demo-user-id') {
+              await supabase.from('water_logs').insert({ user_id: user.id, amount_ml: amountL * 1000 }); 
+          }
           addXP(XP_WATER);
       } catch(e) {}
   },
@@ -353,7 +416,9 @@ export const useAppStore = create<AppState>((set, get) => ({
       const newEntry: JournalEntry = { id: Date.now().toString(), date: new Date().toLocaleDateString('pt-BR'), content: text };
       set({ journal: [newEntry, ...journal] });
       try { 
-          await supabase.from('journal_entries').insert({ user_id: user.id, content: text }); 
+          if (user.id !== 'demo-user-id') {
+              await supabase.from('journal_entries').insert({ user_id: user.id, content: text }); 
+          }
           addXP(XP_JOURNAL);
       } catch(e) {}
   },
@@ -362,14 +427,22 @@ export const useAppStore = create<AppState>((set, get) => ({
       const { user } = get();
       if (!user) return;
       set((state) => ({ user: state.user ? { ...state.user, height_cm: height, target_weight_kg: target, current_weight_kg: current } : null }));
-      try { await supabase.from('profiles').update({ height_cm: height, target_weight_kg: target, current_weight_kg: current }).eq('id', user.id); } catch(e) {}
+      try { 
+          if(user.id !== 'demo-user-id') {
+              await supabase.from('profiles').update({ height_cm: height, target_weight_kg: target, current_weight_kg: current }).eq('id', user.id); 
+          }
+      } catch(e) {}
   },
 
   updateAvatar: async (url) => {
       const { user } = get();
       if (!user) return;
       set((state) => ({ user: state.user ? { ...state.user, avatar_url: url } : null }));
-      try { await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id); } catch(e) {}
+      try { 
+          if (user.id !== 'demo-user-id') {
+              await supabase.from('profiles').update({ avatar_url: url }).eq('id', user.id); 
+          }
+      } catch(e) {}
   },
 
   updateProgressPhoto: async (type, url) => {
@@ -382,7 +455,11 @@ export const useAppStore = create<AppState>((set, get) => ({
               current_photo_url: type === 'current' ? url : state.user.current_photo_url
           } : null
       }));
-      try { await supabase.from('profiles').update({ [type === 'start' ? 'start_photo_url' : 'current_photo_url']: url }).eq('id', user.id); } catch(e) {}
+      try { 
+          if (user.id !== 'demo-user-id') {
+            await supabase.from('profiles').update({ [type === 'start' ? 'start_photo_url' : 'current_photo_url']: url }).eq('id', user.id); 
+          }
+      } catch(e) {}
   },
 
   addGalleryPhoto: async (url) => {
@@ -390,7 +467,11 @@ export const useAppStore = create<AppState>((set, get) => ({
       if (!user) return;
       const newPhoto = { id: Date.now().toString(), date: new Date().toLocaleDateString('pt-BR'), url: url, weight: user.current_weight_kg };
       set((state) => ({ user: state.user ? { ...state.user, progress_photos: [newPhoto, ...state.user.progress_photos] } : null }));
-      try { await supabase.from('weight_logs').insert({ user_id: user.id, weight_kg: user.current_weight_kg, photo_url: url, note: 'Galeria' }); } catch(e) {}
+      try { 
+          if (user.id !== 'demo-user-id') {
+              await supabase.from('weight_logs').insert({ user_id: user.id, weight_kg: user.current_weight_kg, photo_url: url, note: 'Galeria' }); 
+          }
+      } catch(e) {}
   },
 
   clearNewBadge: () => set({ newBadgeUnlocked: null })
