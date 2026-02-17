@@ -153,14 +153,14 @@ export const Auth: React.FC = () => {
                     {/* Inputs based on View */}
                     <div className="space-y-3">
                         {view === 'register' && (
-                            <>
+                            <div className="space-y-3 animate-in fade-in duration-300">
                                 <input 
                                     type="text" 
                                     placeholder="Nome Completo" 
                                     value={fullName}
                                     onChange={(e) => setFullName(e.target.value)}
                                     className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-brand-accent transition-colors"
-                                    required={view === 'register'}
+                                    required
                                 />
                                 <input 
                                     type="tel" 
@@ -169,7 +169,7 @@ export const Auth: React.FC = () => {
                                     onChange={(e) => setPhone(e.target.value)}
                                     className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-xl px-4 py-4 text-white placeholder:text-white/50 focus:outline-none focus:border-brand-accent transition-colors"
                                 />
-                            </>
+                            </div>
                         )}
 
                         <input 
